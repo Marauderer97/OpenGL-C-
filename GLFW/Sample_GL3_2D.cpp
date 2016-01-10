@@ -301,15 +301,15 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 VAO *triangle, *rectangle, *circle;
 
 // Creates the triangle object used in this sample code
-void createTriangle ()
+void createTriangle (float x[], float y[])
 {
   /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
   /* Define vertex array as used in glBegin (GL_TRIANGLES) */
   static const GLfloat vertex_buffer_data [] = {
-    0, 2,0, // vertex 0
-    -2,-2,0, // vertex 1
-    2,-2,0, // vertex 2
+    x[0],y[0],0, // vertex 0
+    x[1],y[1],0, // vertex 1
+    x[2],y[2],0, // vertex 2
   };
 
   static const GLfloat color_buffer_data [] = {
@@ -323,17 +323,17 @@ void createTriangle ()
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle ()
+void createRectangle (float x[], float y[])
 {
   // GL3 accepts only Triangles. Quads are not supported
   static const GLfloat vertex_buffer_data [] = {
-    -1.2,-1,0, // vertex 1
-    1.2,-1,0, // vertex 2
-    1.2, 1,0, // vertex 3
+    x[0],y[0],0, // vertex 1
+    x[1],y[1],0, // vertex 2
+    x[2],y[2],0, // vertex 3
 
-    1.2, 1,0, // vertex 3
-    -1.2, 1,0, // vertex 4
-    -1.2,-1,0  // vertex 1
+    x[0],y[0],0, // vertex 3
+    x[2],y[2],0, // vertex 4
+    x[3],y[3],0  // vertex 1
   };
 
   static const GLfloat color_buffer_data [] = {
@@ -350,14 +350,14 @@ void createRectangle ()
   rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
 }
 
-void createCircle ()
+void createCircle (float x, float y, float r, int NoOfParts)
 {
-    int parts = 20;
-    int radius = 2;
+    int parts = NoOfParts;
+    float radius = r;
     GLfloat vertex_buffer_data[parts*9];
     GLfloat color_buffer_data[parts*9];
     int i,j;
-    float angle=(360/parts)*(3.1415/180);
+    float angle=(2*M_PI/parts);
     float current_angle = 0;
     for(i=0;i<parts;i++){
         for(j=0;j<3;j++){
@@ -365,14 +365,14 @@ void createCircle ()
             color_buffer_data[i*9+j*3+1]=0;
             color_buffer_data[i*9+j*3+2]=0;
         }
-        vertex_buffer_data[i*9]=0;
-        vertex_buffer_data[i*9+1]=0;
+        vertex_buffer_data[i*9]=x;
+        vertex_buffer_data[i*9+1]=y;
         vertex_buffer_data[i*9+2]=0;
-        vertex_buffer_data[i*9+3]=radius*cos(current_angle);
-        vertex_buffer_data[i*9+4]=radius*sin(current_angle);
+        vertex_buffer_data[i*9+3]=x+radius*cos(current_angle);
+        vertex_buffer_data[i*9+4]=y+radius*sin(current_angle);
         vertex_buffer_data[i*9+5]=0;
-	    vertex_buffer_data[i*9+6]=radius*cos(current_angle+angle);
-        vertex_buffer_data[i*9+7]=radius*sin(current_angle+angle);
+	    vertex_buffer_data[i*9+6]=x+radius*cos(current_angle+angle);
+        vertex_buffer_data[i*9+7]=y+radius*sin(current_angle+angle);
         vertex_buffer_data[i*9+8]=0;
     	current_angle+=angle;
     }
@@ -422,7 +422,7 @@ void draw ()
 
   glm::mat4 translateTriangle = glm::translate (glm::vec3(triangle_rotation/40, 0.0f, 0.0f)); // glTranslatef
   glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-  glm::mat4 triangleTransform = translateTriangle * rotateTriangle;
+  glm::mat4 triangleTransform = translateTriangle;
   Matrices.model *= triangleTransform; 
   MVP = VP * Matrices.model; // MVP = p * V * M
 
@@ -507,9 +507,11 @@ void initGL (GLFWwindow* window, int width, int height)
 {
     /* Objects should be created before any other gl function and shaders */
 	// Create the models
-	//createTriangle (); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-	//createRectangle ();
-        createCircle();
+	//createTriangle (x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
+    float x[] = {0.0,0.0,1.0,1.0};
+    float y[] = {0.0,1.0,1.0,0.0};
+    //createRectangle(x,y);
+    createCircle(0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
