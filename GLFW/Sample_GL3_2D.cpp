@@ -203,10 +203,14 @@ void draw3DObject (struct VAO* vao)
  * Customizable functions *
  **************************/
 
+VAO *triangle, *rectangle, *circle;
+
 float triangle_rot_dir = 1;
 float rectangle_rot_dir = 1;
 bool triangle_rot_status = true;
 bool rectangle_rot_status = true;
+float x_delta = 0;
+float y_delta = 0;
 
 /* Executed when a regular key is pressed/released/held-down */
 /* Prefered for Keyboard events */
@@ -258,11 +262,14 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
-            if (action == GLFW_RELEASE)
+            if (action == GLFW_RELEASE) {
+                x_delta += 0.1; 
                 triangle_rot_dir *= -1;
+            }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
+                x_delta -= 0.1; 
                 rectangle_rot_dir *= -1;
             }
             break;
@@ -298,7 +305,6 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
     Matrices.projection = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, 0.1f, 500.0f);
 }
 
-VAO *triangle, *rectangle, *circle;
 
 // Creates the triangle object used in this sample code
 void createTriangle (float x[], float y[])
@@ -420,7 +426,7 @@ void draw ()
 
   /* Render your scene */
 
-  glm::mat4 translateTriangle = glm::translate (glm::vec3(triangle_rotation/40, 0.0f, 0.0f)); // glTranslatef
+  glm::mat4 translateTriangle = glm::translate (glm::vec3(x_delta, y_delta, 0.0f)); // glTranslatef
   glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
   glm::mat4 triangleTransform = translateTriangle;
   Matrices.model *= triangleTransform; 
