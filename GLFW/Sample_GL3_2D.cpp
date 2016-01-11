@@ -43,11 +43,13 @@ map <string, pair<float,float> > objects; //When you create any object store its
 map <string, VAO*> object_refs; //When you create an object store its VAO reference here
 map <string, int> object_status; //When you create an object stores its display status here (1=visible or 0=hidden)
 map <string, COLOR> object_color; //When you create an object give it a color
+map <string, pair<float,float> > object_dimensions; //When you create a rectangle, add its height and width here
 
 float gravity = 0.01;
+float airResistance = 0.003;
 int inAir = 0;
 float y_speed = 0;
-float x_speed = 0.15;
+float x_speed = 0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name]=make_pair(objects[name].first+dx,objects[name].second+dy);
@@ -147,7 +149,7 @@ void quit(GLFWwindow *window)
 
 
 /* Generate VAO, VBOs and return VAO handle */
-struct VAO* create3DObject (GLenum primitive_mode, int numVertices, const GLfloat* vertex_buffer_data, const GLfloat* color_buffer_data, GLenum fill_mode=GL_FILL)
+struct VAO* create3DObject (GLenum primitive_mode, int numVertices, GLfloat* vertex_buffer_data, GLfloat* color_buffer_data, GLenum fill_mode=GL_FILL)
 {
     struct VAO* vao = new struct VAO;
     vao->PrimitiveMode = primitive_mode;
@@ -187,7 +189,7 @@ struct VAO* create3DObject (GLenum primitive_mode, int numVertices, const GLfloa
 }
 
 /* Generate VAO, VBOs and return VAO handle - Common Color for all vertices */
-struct VAO* create3DObject (GLenum primitive_mode, int numVertices, const GLfloat* vertex_buffer_data, const GLfloat red, const GLfloat green, const GLfloat blue, GLenum fill_mode=GL_FILL)
+struct VAO* create3DObject (GLenum primitive_mode, int numVertices, GLfloat* vertex_buffer_data, GLfloat red, GLfloat green, GLfloat blue, GLenum fill_mode=GL_FILL)
 {
     GLfloat* color_buffer_data = new GLfloat [3*numVertices];
     for (int i=0; i<numVertices; i++) {
@@ -284,6 +286,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             if (action == GLFW_RELEASE) {
                 inAir = 1;
                 y_speed = 0.1;
+                x_speed = -0.15;
                 triangle_rot_dir *= -1;
             }
             break;
@@ -331,16 +334,18 @@ void createTriangle (string name, COLOR color, float x[], float y[])
   /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
   /* Define vertex array as used in glBegin (GL_TRIANGLES) */
-  static const GLfloat vertex_buffer_data [] = {
-    x[0],y[0],0, // vertex 0
-    x[1],y[1],0, // vertex 1
-    x[2],y[2],0, // vertex 2
+  float xc=(x[0]+x[1]+x[2])/3;
+  float yc=(y[0]+y[1]+y[2])/3;
+  GLfloat vertex_buffer_data [] = {
+    x[0]-xc,y[0]-yc,0, // vertex 0
+    x[1]-xc,y[1]-yc,0, // vertex 1
+    x[2]-xc,y[2]-yc,0 // vertex 2
   };
 
-  static const GLfloat color_buffer_data [] = {
+  GLfloat color_buffer_data [] = {
     color.r,color.g,color.b, // color 1
     color.r,color.g,color.b, // color 2
-    color.r,color.g,color.b, // color 3
+    color.r,color.g,color.b // color 3
   };
 
   // create3DObject creates and returns a handle to a VAO that can be used later
@@ -355,24 +360,25 @@ void createTriangle (string name, COLOR color, float x[], float y[])
 void createRectangle (string name, COLOR color, float x, float y, float height, float width)
 {
   // GL3 accepts only Triangles. Quads are not supported
-  static const GLfloat vertex_buffer_data [] = {
-    x-width/2,y-height/2,0, // vertex 1
-    x-width/2,y+height/2,0, // vertex 2
-    x+width/2,y+height/2,0, // vertex 3
+  float w=width/2,h=height/2;
+  GLfloat vertex_buffer_data [] = {
+    -w,-h,0, // vertex 1
+    -w,h,0, // vertex 2
+    w,h,0, // vertex 3
 
-    x+width/2,y+height/2,0, // vertex 3
-    x+width/2,y-height/2,0, // vertex 4
-    x-width/2,y-height/2,0  // vertex 1
+    w,h,0, // vertex 3
+    w,-h,0, // vertex 4
+    -w,-h,0  // vertex 1
   };
 
-  static const GLfloat color_buffer_data [] = {
+  GLfloat color_buffer_data [] = {
     color.r,color.g,color.b, // color 1
     color.r,color.g,color.b, // color 2
     color.r,color.g,color.b, // color 3
     
     color.r,color.g,color.b, // color 4
     color.r,color.g,color.b, // color 5
-    color.r,color.g,color.b, // color 6
+    color.r,color.g,color.b // color 6
   };
 
   // create3DObject creates and returns a handle to a VAO that can be used later
@@ -381,6 +387,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
   object_refs[name]=rectangle;
   object_status[name]=1;
   object_color[name]=color;
+  object_dimensions[name]=make_pair(height,width);
 }
 
 void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts)
@@ -398,14 +405,14 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
             color_buffer_data[i*9+j*3+1]=color.g;
             color_buffer_data[i*9+j*3+2]=color.b;
         }
-        vertex_buffer_data[i*9]=x;
-        vertex_buffer_data[i*9+1]=y;
+        vertex_buffer_data[i*9]=0;
+        vertex_buffer_data[i*9+1]=0;
         vertex_buffer_data[i*9+2]=0;
-        vertex_buffer_data[i*9+3]=x+radius*cos(current_angle);
-        vertex_buffer_data[i*9+4]=y+radius*sin(current_angle);
+        vertex_buffer_data[i*9+3]=radius*cos(current_angle);
+        vertex_buffer_data[i*9+4]=radius*sin(current_angle);
         vertex_buffer_data[i*9+5]=0;
-	    vertex_buffer_data[i*9+6]=x+radius*cos(current_angle+angle);
-        vertex_buffer_data[i*9+7]=y+radius*sin(current_angle+angle);
+	    vertex_buffer_data[i*9+6]=radius*cos(current_angle+angle);
+        vertex_buffer_data[i*9+7]=radius*sin(current_angle+angle);
         vertex_buffer_data[i*9+8]=0;
     	current_angle+=angle;
     }
@@ -419,6 +426,23 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
 float camera_rotation_angle = 90;
 float rectangle_rotation = 0;
 float triangle_rotation = 0;
+
+//Check collisions between rectangles only!
+int checkCollision(string name, float dx, float dy){
+    int colleft=0,colright=0,colbottom=0,coltop=0;
+    for(map<string, pair<float,float> >::iterator it2=objects.begin();it2!=objects.end();it2++){
+        string colliding = it2->first;
+        if(colliding!=name && object_dimensions.find(colliding) != object_dimensions.end()){
+            if(dx>0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first-object_dimensions[colliding].second/2<=objects[name].first+object_dimensions[name].second/2){
+                colright=1;
+            }
+            if(dx<0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first+object_dimensions[colliding].second/2>=objects[name].first-object_dimensions[name].second/2){
+                colleft=2;
+            }
+        }
+    }
+    return colleft+colright+colbottom+coltop;
+}
 
 /* Render the scene with openGL */
 /* Edit this function according to your assignment */
@@ -453,10 +477,36 @@ void draw ()
         continue;
     if(inAir){
         y_speed-=gravity;
+        if(x_speed>0)
+            x_speed-=airResistance;
+        else if(x_speed<0)
+            x_speed+=airResistance;
         pair<float,float> position = moveObject("vishrectangle",x_speed,y_speed);
+        int collide = checkCollision("vishrectangle",x_speed,y_speed);
+        cout << collide << endl;
+        if(collide&1 && x_speed>0){
+            moveObject("vishrectangle",-x_speed,0);
+            x_speed=0;
+        }
+        collide/=2;
+        if(collide&1 && x_speed<0){
+            moveObject("vishrectangle",-x_speed,0);
+            x_speed*=-1;
+        }
+        collide/=2;
+        if(collide&1){
+            moveObject("vishrectangle",-y_speed,0);
+            y_speed*=-1;
+        }
+        collide/=2;
+        if(collide&1){
+            moveObject("vishrectangle",-y_speed,0);
+            y_speed*=-1;
+        }
         if(position.second <= 0){
             objects["vishrectangle"].second = 0;
             inAir=0;
+            x_speed=0;
             y_speed=0;
         }
     }
@@ -481,10 +531,10 @@ void draw ()
 
     // draw3DObject draws the VAO given to it using current MVP matrix
     draw3DObject(object_refs[current]);
+    // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+    //glPopMatrix ();
   }
 
-  // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
-  // glPopMatrix ();
   /*Matrices.model = glm::mat4(1.0f);
 
   glm::mat4 translateRectangle = glm::translate (glm::vec3(2, 0, 0));        // glTranslatef
@@ -563,9 +613,9 @@ void initGL (GLFWwindow* window, int width, int height)
 
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
-	//createTriangle("vishtriangle",x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,-1.5,0,0.2,0.2);
-    //createRectangle("vishrectangle2",1,0,1.2,1.2);
+	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
+    createRectangle("vishrectangle",vishcolor,1.5,0,0.2,0.2);
+    createRectangle("vishrectangle2",vishcolor,-1,0,1.0,1.0);
     //createCircle("vishcircle",0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
