@@ -34,7 +34,7 @@ struct GLMatrices {
 
 map <string, pair<float,float> > objects; //When you create any object store its center x and y coordinates here
 map <string, VAO*> object_refs; //When you create an object store its VAO reference here
-map <string, int> status; //When you create an object stores its display status here (1 or 0)
+map <string, int> status; //When you create an object stores its display status here (1=visible or 0=hidden)
 
 GLuint programID;
 
@@ -264,13 +264,13 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_RELEASE) {
-                objects["triangle1"]=make_pair(objects["triangle1"].first+0.1,objects["triangle1"].second+0.1); 
+                objects["vishrectangle"]=make_pair(objects["vishrectangle"].first+0.1,objects["vishrectangle"].second+0.15); 
                 triangle_rot_dir *= -1;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
-                objects["triangle1"]=make_pair(objects["triangle1"].first-0.1,objects["triangle1"].second-0.1); 
+                objects["vishrectangle"]=make_pair(objects["vishrectangle"].first-0.1,objects["vishrectangle"].second-0.15); 
                 rectangle_rot_dir *= -1;
             }
             break;
@@ -308,7 +308,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 
 
 // Creates the triangle object used in this sample code
-void createTriangle (float x[], float y[])
+void createTriangle (string name, float x[], float y[])
 {
   /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
@@ -327,13 +327,13 @@ void createTriangle (float x[], float y[])
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *triangle = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
-  objects["triangle1"]=make_pair((x[0]+x[1]+x[2])/3,(y[0]+y[1]+y[2])/3);
-  object_refs["triangle1"]=triangle;
-  status["triangle1"]=1;
+  objects[name]=make_pair((x[0]+x[1]+x[2])/3,(y[0]+y[1]+y[2])/3);
+  object_refs[name]=triangle;
+  status[name]=1;
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (float x, float y, float height, float width)
+void createRectangle (string name, float x, float y, float height, float width)
 {
   // GL3 accepts only Triangles. Quads are not supported
   static const GLfloat vertex_buffer_data [] = {
@@ -341,9 +341,9 @@ void createRectangle (float x, float y, float height, float width)
     x-width/2,y+height/2,0, // vertex 2
     x+width/2,y+height/2,0, // vertex 3
 
-    x-width/2,y-height/2,0, // vertex 3
-    x+width/2,y+height/2,0, // vertex 4
-    x+width/2,y-height/2,0  // vertex 1
+    x+width/2,y+height/2,0, // vertex 3
+    x+width/2,y-height/2,0, // vertex 4
+    x-width/2,y-height/2,0  // vertex 1
   };
 
   static const GLfloat color_buffer_data [] = {
@@ -358,12 +358,12 @@ void createRectangle (float x, float y, float height, float width)
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
-  objects["rectangle1"]=make_pair(x,y);
-  object_refs["rectangle1"]=rectangle;
-  status["rectangle1"]=1;
+  objects[name]=make_pair(x,y);
+  object_refs[name]=rectangle;
+  status[name]=1;
 }
 
-void createCircle (float x, float y, float r, int NoOfParts)
+void createCircle (string name, float x, float y, float r, int NoOfParts)
 {
     int parts = NoOfParts;
     float radius = r;
@@ -390,9 +390,9 @@ void createCircle (float x, float y, float r, int NoOfParts)
     	current_angle+=angle;
     }
     VAO *circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
-    objects["circle1"]=make_pair(x,y);
-    object_refs["circle1"]=circle;
-    status["circle1"]=1;
+    objects[name]=make_pair(x,y);
+    object_refs[name]=circle;
+    status[name]=1;
 }
 
 float camera_rotation_angle = 90;
@@ -426,29 +426,32 @@ void draw ()
   //  Don't change unless you are sure!!
   glm::mat4 VP = Matrices.projection * Matrices.view;
 
-  // Send our transformation to the currently bound shader, in the "MVP" uniform
-  // For each model you render, since the MVP will be different (at least the M part)
-  //  Don't change unless you are sure!!
-  glm::mat4 MVP;	// MVP = Projection * View * Model
+  for(map<string, pair<float,float> >::iterator it=objects.begin();it!=objects.end();it++){
+    string current = it->first; //The name of the current object
+    if(status[current]==0)
+        continue;
+    // Send our transformation to the currently bound shader, in the "MVP" uniform
+    // For each model you render, since the MVP will be different (at least the M part)
+    //  Don't change unless you are sure!!
+    glm::mat4 MVP;	// MVP = Projection * View * Model
 
-  // Load identity to model matrix
-  Matrices.model = glm::mat4(1.0f);
+    // Load identity to model matrix
+    Matrices.model = glm::mat4(1.0f);
 
-  /* Render your scene */
+    /* Render your scene */
 
-  //for(map<string, pair<x,y> >::iterator it=objects.begin();it!=objects.end();it++){
-  glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["triangle1"].first, objects["triangle1"].second, 0.0f)); // glTranslatef
-  //glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-  glm::mat4 triangleTransform = translateTriangle;
-  Matrices.model *= triangleTransform; 
-  MVP = VP * Matrices.model; // MVP = p * V * M
+    glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].first, objects[current].second, 0.0f)); // glTranslatef
+    //glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+    glm::mat4 triangleTransform = translateTriangle;
+    Matrices.model *= triangleTransform; 
+    MVP = VP * Matrices.model; // MVP = p * V * M
 
-  //  Don't change unless you are sure!!
-  glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+    //  Don't change unless you are sure!!
+    glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-  // draw3DObject draws the VAO given to it using current MVP matrix
-  draw3DObject(object_refs["triangle1"]);
-  //}
+    // draw3DObject draws the VAO given to it using current MVP matrix
+    draw3DObject(object_refs[current]);
+  }
 
   // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
   // glPopMatrix ();
@@ -527,9 +530,10 @@ void initGL (GLFWwindow* window, int width, int height)
 	// Create the models
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
-	createTriangle (x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    //createRectangle(0,0,1,1);
-    //createCircle(0,0,0.5,15);
+	//createTriangle("vishtriangle",x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
+    createRectangle("vishrectangle",0,1,1,1);
+    //createRectangle("vishrectangle2",1,0,1.2,1.2);
+    //createCircle("vishcircle",0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
