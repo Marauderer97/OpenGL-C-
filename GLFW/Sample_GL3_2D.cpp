@@ -25,6 +25,13 @@ struct VAO {
 };
 typedef struct VAO VAO;
 
+struct COLOR {
+    int r;
+    int g;
+    int b;
+};
+typedef struct COLOR COLOR;
+
 struct GLMatrices {
 	glm::mat4 projection;
 	glm::mat4 model;
@@ -34,7 +41,8 @@ struct GLMatrices {
 
 map <string, pair<float,float> > objects; //When you create any object store its center x and y coordinates here
 map <string, VAO*> object_refs; //When you create an object store its VAO reference here
-map <string, int> status; //When you create an object stores its display status here (1=visible or 0=hidden)
+map <string, int> object_status; //When you create an object stores its display status here (1=visible or 0=hidden)
+map <string, COLOR> object_color; //When you create an object give it a color
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name]=make_pair(objects[name].first+dx,objects[name].second+dy);
@@ -313,7 +321,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 
 
 // Creates the triangle object used in this sample code
-void createTriangle (string name, float x[], float y[])
+void createTriangle (string name, COLOR color, float x[], float y[])
 {
   /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
@@ -325,20 +333,21 @@ void createTriangle (string name, float x[], float y[])
   };
 
   static const GLfloat color_buffer_data [] = {
-    1,0,0, // color 0
-    0,1,0, // color 1
-    0,0,1, // color 2
+    color.r,color.g,color.b, // color 1
+    color.r,color.g,color.b, // color 2
+    color.r,color.g,color.b, // color 3
   };
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *triangle = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
   objects[name]=make_pair((x[0]+x[1]+x[2])/3,(y[0]+y[1]+y[2])/3);
   object_refs[name]=triangle;
-  status[name]=1;
+  object_status[name]=1;
+  object_color[name]=color;
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (string name, float x, float y, float height, float width)
+void createRectangle (string name, COLOR color, float x, float y, float height, float width)
 {
   // GL3 accepts only Triangles. Quads are not supported
   static const GLfloat vertex_buffer_data [] = {
@@ -352,23 +361,24 @@ void createRectangle (string name, float x, float y, float height, float width)
   };
 
   static const GLfloat color_buffer_data [] = {
-    1,0,0, // color 1
-    0,0,1, // color 2
-    0,1,0, // color 3
-
-    0,1,0, // color 3
-    0.3,0.3,0.3, // color 4
-    1,0,0  // color 1
+    color.r,color.g,color.b, // color 1
+    color.r,color.g,color.b, // color 2
+    color.r,color.g,color.b, // color 3
+    
+    color.r,color.g,color.b, // color 4
+    color.r,color.g,color.b, // color 5
+    color.r,color.g,color.b, // color 6
   };
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
   objects[name]=make_pair(x,y);
   object_refs[name]=rectangle;
-  status[name]=1;
+  object_status[name]=1;
+  object_color[name]=color;
 }
 
-void createCircle (string name, float x, float y, float r, int NoOfParts)
+void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts)
 {
     int parts = NoOfParts;
     float radius = r;
@@ -379,9 +389,9 @@ void createCircle (string name, float x, float y, float r, int NoOfParts)
     float current_angle = 0;
     for(i=0;i<parts;i++){
         for(j=0;j<3;j++){
-            color_buffer_data[i*9+j*3]=1;
-            color_buffer_data[i*9+j*3+1]=0;
-            color_buffer_data[i*9+j*3+2]=0;
+            color_buffer_data[i*9+j*3]=color.r;
+            color_buffer_data[i*9+j*3+1]=color.g;
+            color_buffer_data[i*9+j*3+2]=color.b;
         }
         vertex_buffer_data[i*9]=x;
         vertex_buffer_data[i*9+1]=y;
@@ -397,7 +407,8 @@ void createCircle (string name, float x, float y, float r, int NoOfParts)
     VAO *circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
     objects[name]=make_pair(x,y);
     object_refs[name]=circle;
-    status[name]=1;
+    object_status[name]=1;
+    object_color[name]=color;
 }
 
 float camera_rotation_angle = 90;
@@ -433,7 +444,7 @@ void draw ()
 
   for(map<string, pair<float,float> >::iterator it=objects.begin();it!=objects.end();it++){
     string current = it->first; //The name of the current object
-    if(status[current]==0)
+    if(object_status[current]==0)
         continue;
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // For each model you render, since the MVP will be different (at least the M part)
@@ -533,10 +544,13 @@ void initGL (GLFWwindow* window, int width, int height)
 {
     /* Objects should be created before any other gl function and shaders */
 	// Create the models
+    
+    COLOR vishcolor = {0,1,1};
+
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",0,1,1,1);
+    createRectangle("vishrectangle",vishcolor,0,1,1,1);
     //createRectangle("vishrectangle2",1,0,1.2,1.2);
     //createCircle("vishcircle",0,0,0.5,15);
 	
@@ -563,8 +577,8 @@ void initGL (GLFWwindow* window, int width, int height)
 
 int main (int argc, char** argv)
 {
-	int width = 600;
-	int height = 600;
+	int width = 700;
+	int height = 700;
 
     GLFWwindow* window = initGLFW(width, height);
 
