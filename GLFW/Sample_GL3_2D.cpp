@@ -436,11 +436,29 @@ int checkCollision(string name, float dx, float dy){
             if(dx>0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2){
                 colright=1;
                 x_speed*=-1;
+                x_speed/=2;
                 objects[name].first=objects[colliding].first-object_dimensions[colliding].second/2-object_dimensions[name].second/2;
             }
             else if(dx<0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2){
                 colleft=2;
                 x_speed*=-1;
+                x_speed/=2;
+                objects[name].first=objects[colliding].first+object_dimensions[colliding].second/2+object_dimensions[name].second/2;
+            }
+            if(dy>0 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2){
+                colright=1;
+                if(abs(y_speed)<0.05)
+                    y_speed=0;
+                y_speed*=-1;
+                y_speed/=2;
+                objects[name].second=objects[colliding].second-object_dimensions[colliding].first/2-object_dimensions[name].first/2;
+            }
+            else if(dy<0 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2){
+                colleft=2;
+                if(abs(y_speed)<0.05)
+                    y_speed=0;
+                y_speed*=-1;
+                y_speed/=2;
                 objects[name].first=objects[colliding].first+object_dimensions[colliding].second/2+object_dimensions[name].second/2;
             }
         }
@@ -485,8 +503,10 @@ void draw ()
             x_speed-=airResistance;
         else if(x_speed<0)
             x_speed+=airResistance;
-        pair<float,float> position = moveObject("vishrectangle",x_speed,y_speed);
-        checkCollision("vishrectangle",x_speed,y_speed);
+        pair<float,float> position = moveObject("vishrectangle",x_speed,0);
+        checkCollision("vishrectangle",x_speed,0); //Always call the checkCollision function with only 1 position change at a time!
+        position = moveObject("vishrectangle",0,y_speed);
+        checkCollision("vishrectangle",0,y_speed);
         position = moveObject("vishrectangle",0,0); //Just get the current coordinates of the object
         if(position.second <= 0){
             objects["vishrectangle"].second = 0;
@@ -600,7 +620,7 @@ void initGL (GLFWwindow* window, int width, int height)
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
     createRectangle("vishrectangle",vishcolor,-1.5,0,0.2,0.2);
-    createRectangle("vishrectangle2",vishcolor,0.5,0,1.0,1.0);
+    createRectangle("vishrectangle2",vishcolor,0.5,0,0.1,1.0);
     //createCircle("vishcircle",0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
