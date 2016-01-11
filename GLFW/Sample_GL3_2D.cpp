@@ -2,6 +2,7 @@
 #include <cmath>
 #include <fstream>
 #include <vector>
+#include <map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -30,6 +31,8 @@ struct GLMatrices {
 	glm::mat4 view;
 	GLuint MatrixID;
 } Matrices;
+
+map <string, pair<float,float> > objects; //When you create any object store it here
 
 GLuint programID;
 
@@ -209,8 +212,6 @@ float triangle_rot_dir = 1;
 float rectangle_rot_dir = 1;
 bool triangle_rot_status = true;
 bool rectangle_rot_status = true;
-float x_delta = 0;
-float y_delta = 0;
 
 /* Executed when a regular key is pressed/released/held-down */
 /* Prefered for Keyboard events */
@@ -260,16 +261,19 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 /* Executed when a mouse button is pressed/released */
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
+    cout << objects["circle1"].first << " " << objects["circle1"].second << endl;
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_RELEASE) {
-                x_delta += 0.1; 
+                objects["circle1"]=make_pair(objects["circle1"].first+0.1,objects["circl1"].second); 
+                cout << objects["circle1"].first << " " << objects["circle1"].second << endl;
                 triangle_rot_dir *= -1;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
-                x_delta -= 0.1; 
+                objects["circle1"]=make_pair(objects["circle1"].first-0.1,objects["circl1"].second); 
+                cout << objects["circle1"].first << " " << objects["circle1"].second << endl;
                 rectangle_rot_dir *= -1;
             }
             break;
@@ -329,17 +333,17 @@ void createTriangle (float x[], float y[])
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (float x[], float y[])
+void createRectangle (float x, float y, float height, float width)
 {
   // GL3 accepts only Triangles. Quads are not supported
   static const GLfloat vertex_buffer_data [] = {
-    x[0],y[0],0, // vertex 1
-    x[1],y[1],0, // vertex 2
-    x[2],y[2],0, // vertex 3
+    x-width/2,y-height/2,0, // vertex 1
+    x-width/2,y+height/2,0, // vertex 2
+    x+width/2,y+height/2,0, // vertex 3
 
-    x[0],y[0],0, // vertex 3
-    x[2],y[2],0, // vertex 4
-    x[3],y[3],0  // vertex 1
+    x-width/2,y-height/2,0, // vertex 3
+    x+width/2,y+height/2,0, // vertex 4
+    x+width/2,y-height/2,0  // vertex 1
   };
 
   static const GLfloat color_buffer_data [] = {
@@ -354,6 +358,7 @@ void createRectangle (float x[], float y[])
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
+  objects["rectangle1"]=make_pair(x,y);
 }
 
 void createCircle (float x, float y, float r, int NoOfParts)
@@ -383,6 +388,7 @@ void createCircle (float x, float y, float r, int NoOfParts)
     	current_angle+=angle;
     }
     circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
+    objects["circle1"]=make_pair(x,y);
 }
 
 float camera_rotation_angle = 90;
@@ -426,8 +432,8 @@ void draw ()
 
   /* Render your scene */
 
-  glm::mat4 translateTriangle = glm::translate (glm::vec3(x_delta, y_delta, 0.0f)); // glTranslatef
-  glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+  glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["rectangle1"].first, objects["rectangle1"].second, 0.0f)); // glTranslatef
+  //glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
   glm::mat4 triangleTransform = translateTriangle;
   Matrices.model *= triangleTransform; 
   MVP = VP * Matrices.model; // MVP = p * V * M
@@ -436,7 +442,7 @@ void draw ()
   glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
   // draw3DObject draws the VAO given to it using current MVP matrix
-  draw3DObject(circle);
+  draw3DObject(rectangle);
 
   // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
   // glPopMatrix ();
@@ -516,8 +522,8 @@ void initGL (GLFWwindow* window, int width, int height)
 	//createTriangle (x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
     float x[] = {0.0,0.0,1.0,1.0};
     float y[] = {0.0,1.0,1.0,0.0};
-    //createRectangle(x,y);
-    createCircle(0,0,0.5,15);
+    createRectangle(0,0,1,1);
+    //createCircle(0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
