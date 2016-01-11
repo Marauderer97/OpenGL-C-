@@ -36,6 +36,11 @@ map <string, pair<float,float> > objects; //When you create any object store its
 map <string, VAO*> object_refs; //When you create an object store its VAO reference here
 map <string, int> status; //When you create an object stores its display status here (1=visible or 0=hidden)
 
+pair<float,float> moveObject(string name, float dx, float dy) {
+    objects[name]=make_pair(objects[name].first+dx,objects[name].second+dy);
+    return objects[name];
+}
+
 GLuint programID;
 
 /* Function to load Shaders - Use it as it is */
@@ -264,13 +269,13 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_RELEASE) {
-                objects["vishrectangle"]=make_pair(objects["vishrectangle"].first+0.1,objects["vishrectangle"].second+0.15); 
+                moveObject("vishrectangle",0.1,0.1);
                 triangle_rot_dir *= -1;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
-                objects["vishrectangle"]=make_pair(objects["vishrectangle"].first-0.1,objects["vishrectangle"].second-0.15); 
+                moveObject("vishrectangle",-0.1,-0.1);
                 rectangle_rot_dir *= -1;
             }
             break;
