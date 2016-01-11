@@ -44,6 +44,11 @@ map <string, VAO*> object_refs; //When you create an object store its VAO refere
 map <string, int> object_status; //When you create an object stores its display status here (1=visible or 0=hidden)
 map <string, COLOR> object_color; //When you create an object give it a color
 
+float gravity = 0.01;
+int inAir = 0;
+float y_speed = 0;
+float x_speed = 0.15;
+
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name]=make_pair(objects[name].first+dx,objects[name].second+dy);
     return objects[name];
@@ -277,13 +282,13 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_RELEASE) {
-                moveObject("vishrectangle",0.1,0.1);
+                inAir = 1;
+                y_speed = 0.1;
                 triangle_rot_dir *= -1;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
-                moveObject("vishrectangle",-0.1,-0.1);
                 rectangle_rot_dir *= -1;
             }
             break;
@@ -446,6 +451,15 @@ void draw ()
     string current = it->first; //The name of the current object
     if(object_status[current]==0)
         continue;
+    if(inAir){
+        y_speed-=gravity;
+        pair<float,float> position = moveObject("vishrectangle",x_speed,y_speed);
+        if(position.second <= 0){
+            objects["vishrectangle"].second = 0;
+            inAir=0;
+            y_speed=0;
+        }
+    }
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // For each model you render, since the MVP will be different (at least the M part)
     //  Don't change unless you are sure!!
@@ -550,7 +564,7 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,0,1,1,1);
+    createRectangle("vishrectangle",vishcolor,-1.5,0,0.2,0.2);
     //createRectangle("vishrectangle2",1,0,1.2,1.2);
     //createCircle("vishcircle",0,0,0.5,15);
 	
