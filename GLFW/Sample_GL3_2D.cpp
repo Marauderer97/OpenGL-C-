@@ -435,10 +435,12 @@ int checkCollision(string name, float dx, float dy){
         if(colliding!=name && object_dimensions.find(colliding) != object_dimensions.end()){
             if(dx>0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2){
                 colright=1;
+                x_speed*=-1;
                 objects[name].first=objects[colliding].first-object_dimensions[colliding].second/2-object_dimensions[name].second/2;
             }
             else if(dx<0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2){
                 colleft=2;
+                x_speed*=-1;
                 objects[name].first=objects[colliding].first+object_dimensions[colliding].second/2+object_dimensions[name].second/2;
             }
         }
@@ -484,22 +486,8 @@ void draw ()
         else if(x_speed<0)
             x_speed+=airResistance;
         pair<float,float> position = moveObject("vishrectangle",x_speed,y_speed);
-        int collide = checkCollision("vishrectangle",x_speed,y_speed);
-        if(collide&1){
-            x_speed*=-1;
-        }
-        collide/=2;
-        if(collide&1){
-            x_speed*=-1;
-        }
-        collide/=2;
-        if(collide&1){
-            y_speed*=-1;
-        }
-        collide/=2;
-        if(collide&1){
-            y_speed*=-1;
-        }
+        checkCollision("vishrectangle",x_speed,y_speed);
+        position = moveObject("vishrectangle",0,0); //Just get the current coordinates of the object
         if(position.second <= 0){
             objects["vishrectangle"].second = 0;
             inAir=0;
