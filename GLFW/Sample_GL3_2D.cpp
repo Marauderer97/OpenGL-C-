@@ -39,6 +39,8 @@ struct Sprite {
     VAO* object;
     int status;
     float height,width;
+    float x_speed,y_speed;
+    int inAir;
 };
 typedef struct Sprite Sprite;
 
@@ -53,9 +55,6 @@ map <string, Sprite> objects;
 
 float gravity = 0.01;
 float airResistance = 0.003;
-int inAir = 0;
-float y_speed = 0;
-float x_speed = 0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name].x+=dx;
@@ -291,9 +290,9 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_RELEASE) {
-                inAir = 1;
-                y_speed = 0.1;
-                x_speed = 0.15;
+                objects["vishrectangle"].inAir = 1;
+                objects["vishrectangle"].y_speed = 0.1;
+                objects["vishrectangle"].x_speed = -0.15;
                 triangle_rot_dir *= -1;
             }
             break;
@@ -361,11 +360,14 @@ void createTriangle (string name, COLOR color, float x[], float y[])
   vishsprite.color = color;
   vishsprite.name = name;
   vishsprite.object = triangle;
-  vishsprite.x=(x[0]+x[1]+x[2])/3;
+  vishsprite.x=(x[0]+x[1]+x[2])/3; //Position of the sprite is the position of the centroid
   vishsprite.y=(y[0]+y[1]+y[2])/3;
-  vishsprite.height=-1;
-  vishsprite.width=-1;
+  vishsprite.height=-1; //Height of the sprite is undefined
+  vishsprite.width=-1; //Width of the sprite is undefined
   vishsprite.status=1;
+  vishsprite.inAir=0;
+  vishsprite.x_speed=0;
+  vishsprite.y_speed=0;
   objects[name]=vishsprite;
 }
 
@@ -405,6 +407,9 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
   vishsprite.height=height;
   vishsprite.width=width;
   vishsprite.status=1;
+  vishsprite.inAir=0;
+  vishsprite.x_speed=0;
+  vishsprite.y_speed=0;
   objects[name]=vishsprite;
 }
 
@@ -441,9 +446,12 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.object = circle;
     vishsprite.x=x;
     vishsprite.y=y;
-    vishsprite.height=2*r;
-    vishsprite.width=2*r;
+    vishsprite.height=2*r; //Height of the sprite is 2*r
+    vishsprite.width=2*r; //Width of the sprite is 2*r
     vishsprite.status=1;
+    vishsprite.inAir=0;
+    vishsprite.x_speed=0;
+    vishsprite.y_speed=0;
     objects[name]=vishsprite;
 }
 
@@ -458,27 +466,30 @@ int checkCollision(string name, float dx, float dy){
         string colliding = it2->first;
         Sprite col_object = it2->second;
         Sprite my_object = objects[name];
-        if(colliding!=name){
+        if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if(dx>0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
-                x_speed*=-1;
-                x_speed/=2;
+                my_object.x_speed*=-1;
+                my_object.x_speed/=2;
                 my_object.x=col_object.x-col_object.width/2-my_object.width/2;
             }
             else if(dx<0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
-                x_speed*=-1;
-                x_speed/=2;
+                my_object.x_speed*=-1;
+                my_object.x_speed/=2;
                 my_object.x=col_object.x+col_object.width/2+my_object.width/2;
             }
             if(dy>0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
-                y_speed*=-1;
-                y_speed/=2;
+                my_object.y_speed*=-1;
+                my_object.y_speed/=2;
                 my_object.y=col_object.y-col_object.height/2-my_object.height/2;
             }
             else if(dy<0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
-                if(abs(y_speed)<0.05)
-                    y_speed=0;
-                y_speed*=-1;
-                y_speed/=2;
+                if(abs(objects[name].y_speed)<=0.05){
+                    my_object.y_speed=0;
+                    my_object.x_speed=0;
+                    my_object.inAir=0;
+                }
+                my_object.y_speed*=-1;
+                my_object.y_speed/=2;
                 my_object.y=col_object.y+col_object.height/2+my_object.height/2;
             }
         }
@@ -517,25 +528,24 @@ void draw ()
 
   for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
     string current = it->first; //The name of the current object
-    Sprite object = it->second;
-    if(object.status==0)
+    if(objects[current].status==0)
         continue;
-    if(inAir){
-        y_speed-=gravity;
-        if(x_speed>0)
-            x_speed-=airResistance;
-        else if(x_speed<0)
-            x_speed+=airResistance;
-        pair<float,float> position = moveObject("vishrectangle",x_speed,0);
-        checkCollision("vishrectangle",x_speed,0); //Always call the checkCollision function with only 1 position change at a time!
-        position = moveObject("vishrectangle",0,y_speed);
-        checkCollision("vishrectangle",0,y_speed);
-        position = moveObject("vishrectangle",0,0); //Just get the current coordinates of the object
+    if(objects[current].inAir){
+        objects[current].y_speed-=gravity;
+        if(objects[current].x_speed>0)
+            objects[current].x_speed-=airResistance;
+        else if(objects[current].x_speed<0)
+            objects[current].x_speed+=airResistance;
+        pair<float,float> position = moveObject(current,objects[current].x_speed,0);
+        checkCollision(current,objects[current].x_speed,0); //Always call the checkCollision function with only 1 position change at a time!
+        position = moveObject(current,0,objects[current].y_speed);
+        checkCollision(current,0,objects[current].y_speed);
+        position = moveObject(current,0,0); //Just get the current coordinates of the object
         if(position.second <= 0){
-            objects["vishrectangle"].y=0;
-            inAir=0;
-            x_speed=0;
-            y_speed=0;
+            objects[current].y=0;
+            objects[current].inAir=0;
+            objects[current].x_speed=0;
+            objects[current].y_speed=0;
         }
     }
     // Send our transformation to the currently bound shader, in the "MVP" uniform
@@ -642,9 +652,9 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,-1.5,0,0.2,0.2);
-    createRectangle("vishrectangle2",vishcolor,0.5,0,0.1,1.0);
-    //createCircle("vishcircle",0,0,0.5,15);
+    createRectangle("vishrectangle",vishcolor,1.5,0,0.2,0.2); //Generate sprites
+    createRectangle("vishrectangle2",vishcolor,-1,0,0.1,1.0); 
+    //createCircle("vishcircle",vishcolor,0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
