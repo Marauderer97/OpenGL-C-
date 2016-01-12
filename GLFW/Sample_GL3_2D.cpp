@@ -32,6 +32,16 @@ struct COLOR {
 };
 typedef struct COLOR COLOR;
 
+struct Sprite {
+    string name;
+    COLOR color;
+    float x,y;
+    VAO* object;
+    int status;
+    float height,width;
+};
+typedef struct Sprite Sprite;
+
 struct GLMatrices {
 	glm::mat4 projection;
 	glm::mat4 model;
@@ -39,11 +49,7 @@ struct GLMatrices {
 	GLuint MatrixID;
 } Matrices;
 
-map <string, pair<float,float> > objects; //When you create any object store its center x and y coordinates here
-map <string, VAO*> object_refs; //When you create an object store its VAO reference here
-map <string, int> object_status; //When you create an object stores its display status here (1=visible or 0=hidden)
-map <string, COLOR> object_color; //When you create an object give it a color
-map <string, pair<float,float> > object_dimensions; //When you create a rectangle, add its height and width here
+map <string, Sprite> objects;
 
 float gravity = 0.01;
 float airResistance = 0.003;
@@ -52,8 +58,9 @@ float y_speed = 0;
 float x_speed = 0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
-    objects[name]=make_pair(objects[name].first+dx,objects[name].second+dy);
-    return objects[name];
+    objects[name].x+=dx;
+    objects[name].y+=dy;
+    return make_pair(objects[name].x,objects[name].y);
 }
 
 GLuint programID;
@@ -350,10 +357,16 @@ void createTriangle (string name, COLOR color, float x[], float y[])
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *triangle = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
-  objects[name]=make_pair((x[0]+x[1]+x[2])/3,(y[0]+y[1]+y[2])/3);
-  object_refs[name]=triangle;
-  object_status[name]=1;
-  object_color[name]=color;
+  Sprite vishsprite = {};
+  vishsprite.color = color;
+  vishsprite.name = name;
+  vishsprite.object = triangle;
+  vishsprite.x=(x[0]+x[1]+x[2])/3;
+  vishsprite.y=(y[0]+y[1]+y[2])/3;
+  vishsprite.height=-1;
+  vishsprite.width=-1;
+  vishsprite.status=1;
+  objects[name]=vishsprite;
 }
 
 // Creates the rectangle object used in this sample code
@@ -383,11 +396,16 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
 
   // create3DObject creates and returns a handle to a VAO that can be used later
   VAO *rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
-  objects[name]=make_pair(x,y);
-  object_refs[name]=rectangle;
-  object_status[name]=1;
-  object_color[name]=color;
-  object_dimensions[name]=make_pair(height,width);
+  Sprite vishsprite = {};
+  vishsprite.color = color;
+  vishsprite.name = name;
+  vishsprite.object = rectangle;
+  vishsprite.x=x;
+  vishsprite.y=y;
+  vishsprite.height=height;
+  vishsprite.width=width;
+  vishsprite.status=1;
+  objects[name]=vishsprite;
 }
 
 void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts)
@@ -417,10 +435,16 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     	current_angle+=angle;
     }
     VAO *circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
-    objects[name]=make_pair(x,y);
-    object_refs[name]=circle;
-    object_status[name]=1;
-    object_color[name]=color;
+    Sprite vishsprite = {};
+    vishsprite.color = color;
+    vishsprite.name = name;
+    vishsprite.object = circle;
+    vishsprite.x=x;
+    vishsprite.y=y;
+    vishsprite.height=2*r;
+    vishsprite.width=2*r;
+    vishsprite.status=1;
+    objects[name]=vishsprite;
 }
 
 float camera_rotation_angle = 90;
@@ -430,38 +454,36 @@ float triangle_rotation = 0;
 //Check collisions between rectangles only!
 int checkCollision(string name, float dx, float dy){
     int colleft=0,colright=0,colbottom=0,coltop=0;
-    for(map<string, pair<float,float> >::iterator it2=objects.begin();it2!=objects.end();it2++){
+    for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
         string colliding = it2->first;
-        if(colliding!=name && object_dimensions.find(colliding) != object_dimensions.end()){
-            if(dx>0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2){
-                colright=1;
+        Sprite col_object = it2->second;
+        Sprite my_object = objects[name];
+        if(colliding!=name){
+            if(dx>0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
                 x_speed*=-1;
                 x_speed/=2;
-                objects[name].first=objects[colliding].first-object_dimensions[colliding].second/2-object_dimensions[name].second/2;
+                my_object.x=col_object.x-col_object.width/2-my_object.width/2;
             }
-            else if(dx<0 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2){
-                colleft=2;
+            else if(dx<0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
                 x_speed*=-1;
                 x_speed/=2;
-                objects[name].first=objects[colliding].first+object_dimensions[colliding].second/2+object_dimensions[name].second/2;
+                my_object.x=col_object.x+col_object.width/2+my_object.width/2;
             }
-            if(dy>0 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2){
-                colright=1;
+            if(dy>0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
+                y_speed*=-1;
+                y_speed/=2;
+                my_object.y=col_object.y-col_object.height/2-my_object.height/2;
+            }
+            else if(dy<0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
                 if(abs(y_speed)<0.05)
                     y_speed=0;
                 y_speed*=-1;
                 y_speed/=2;
-                objects[name].second=objects[colliding].second-object_dimensions[colliding].first/2-object_dimensions[name].first/2;
-            }
-            else if(dy<0 && objects[colliding].first+object_dimensions[colliding].second/2>objects[name].first-object_dimensions[name].second/2 && objects[colliding].first-object_dimensions[colliding].second/2<objects[name].first+object_dimensions[name].second/2 && objects[colliding].second+object_dimensions[colliding].first/2>objects[name].second-object_dimensions[name].first/2 && objects[colliding].second-object_dimensions[colliding].first/2<objects[name].second+object_dimensions[name].first/2){
-                colleft=2;
-                if(abs(y_speed)<0.05)
-                    y_speed=0;
-                y_speed*=-1;
-                y_speed/=2;
-                objects[name].first=objects[colliding].first+object_dimensions[colliding].second/2+object_dimensions[name].second/2;
+                my_object.y=col_object.y+col_object.height/2+my_object.height/2;
             }
         }
+        objects[name]=my_object;
+        objects[colliding]=col_object;
     }
     return colleft+colright+colbottom+coltop;
 }
@@ -493,9 +515,10 @@ void draw ()
   //  Don't change unless you are sure!!
   glm::mat4 VP = Matrices.projection * Matrices.view;
 
-  for(map<string, pair<float,float> >::iterator it=objects.begin();it!=objects.end();it++){
+  for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
     string current = it->first; //The name of the current object
-    if(object_status[current]==0)
+    Sprite object = it->second;
+    if(object.status==0)
         continue;
     if(inAir){
         y_speed-=gravity;
@@ -509,7 +532,7 @@ void draw ()
         checkCollision("vishrectangle",0,y_speed);
         position = moveObject("vishrectangle",0,0); //Just get the current coordinates of the object
         if(position.second <= 0){
-            objects["vishrectangle"].second = 0;
+            objects["vishrectangle"].y=0;
             inAir=0;
             x_speed=0;
             y_speed=0;
@@ -525,7 +548,7 @@ void draw ()
 
     /* Render your scene */
 
-    glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].first, objects[current].second, 0.0f)); // glTranslatef
+    glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
     //glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
     glm::mat4 triangleTransform = translateTriangle;
     Matrices.model *= triangleTransform; 
@@ -535,7 +558,7 @@ void draw ()
     glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     // draw3DObject draws the VAO given to it using current MVP matrix
-    draw3DObject(object_refs[current]);
+    draw3DObject(objects[current].object);
     // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
     //glPopMatrix ();
   }
