@@ -299,9 +299,18 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             }
             if (action == GLFW_RELEASE) {
                 glfwGetCursorPos(window,&mouse_x,&mouse_y);
-                objects["vishrectangle"].inAir = 1;
-                objects["vishrectangle"].y_speed = -(mouse_y_old-mouse_y)/1000;
-                objects["vishrectangle"].x_speed = (mouse_x_old-mouse_x)/1000;
+                if(objects["vishrectangle"].inAir == 0){
+                    objects["vishrectangle"].inAir = 1;
+                    //Set max jump speeds here (currently 300 and 300)
+                    if(mouse_y_old-mouse_y==0)
+                        objects["vishrectangle"].y_speed=0;
+                    else
+                        objects["vishrectangle"].y_speed = -(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
+                    if(mouse_x_old-mouse_x==0)
+                        objects["vishrectangle"].x_speed=0;
+                    else
+                        objects["vishrectangle"].x_speed = (((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                }
                 triangle_rot_dir *= -1;
             }
             break;
@@ -530,9 +539,18 @@ int checkCollisionSphere(string name,float dx, float dy){
             {
                 if(dx!=0){
                     my_object.x-=dx;
+                    my_object.x_speed*=-1;
+                    my_object.x_speed/=2;
                 }
                 else if(dy!=0){
                     my_object.y-=dy;
+                    my_object.y_speed*=-1;
+                    my_object.y_speed/=2;
+                    if(abs(my_object.y_speed)<=0.05){
+                        my_object.y_speed=0;
+                        my_object.x_speed=0;
+                        my_object.inAir=0;
+                    }
                 }
                 collide=1;
             }
@@ -587,13 +605,6 @@ void draw ()
         position = moveObject(current,0,objects[current].y_speed);
         //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
         checkCollision(current,0,objects[current].y_speed);
-        position = moveObject(current,0,0); //Just get the current coordinates of the object
-        if(position.second <= 0){
-            objects[current].y=0;
-            objects[current].inAir=0;
-            objects[current].x_speed=0;
-            objects[current].y_speed=0;
-        }
     }
     // Send our transformation to the currently bound shader, in the "MVP" uniform
     // For each model you render, since the MVP will be different (at least the M part)
@@ -699,12 +710,12 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,1.5,1,0.2,0.2); //Generate sprites
+    createRectangle("vishrectangle",vishcolor,1.5,1,0.1,0.1); //Generate sprites
     createRectangle("vishrectangle2",vishcolor,-1,0.5,0.3,1); 
-    createRectangle("floor",vishcolor,0,0,0.3,6);
-    createRectangle("roof",vishcolor,0,4,0.3,6);
-    createRectangle("wall1",vishcolor,-3,2,4,0.3);
-    createRectangle("wall2",vishcolor,3,2,4,0.3);
+    createRectangle("floor",vishcolor,0,-2,0.3,8);
+    createRectangle("roof",vishcolor,0,4,0.3,8);
+    createRectangle("wall1",vishcolor,-4,1,6,0.3);
+    createRectangle("wall2",vishcolor,4,1,6,0.3);
     objects["floor"].fixed=1;
     //createCircle("vishcircle",vishcolor,0,0,0.5,15);
 	
