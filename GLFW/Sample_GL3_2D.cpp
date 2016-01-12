@@ -41,6 +41,7 @@ struct Sprite {
     float height,width;
     float x_speed,y_speed;
     int inAir;
+    float radius;
 };
 typedef struct Sprite Sprite;
 
@@ -375,6 +376,7 @@ void createTriangle (string name, COLOR color, float x[], float y[])
   vishsprite.inAir=0;
   vishsprite.x_speed=0;
   vishsprite.y_speed=0;
+  vishsprite.radius=-1; //The bounding circle radius is not defined.
   objects[name]=vishsprite;
 }
 
@@ -417,6 +419,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
   vishsprite.inAir=0;
   vishsprite.x_speed=0;
   vishsprite.y_speed=0;
+  vishsprite.radius=(sqrt(height*height+width*width))/2;
   objects[name]=vishsprite;
 }
 
@@ -459,6 +462,7 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.inAir=0;
     vishsprite.x_speed=0;
     vishsprite.y_speed=0;
+    vishsprite.radius=r;
     objects[name]=vishsprite;
 }
 
@@ -466,7 +470,9 @@ float camera_rotation_angle = 90;
 float rectangle_rotation = 0;
 float triangle_rotation = 0;
 
-//Check collisions between rectangles only!
+//Check collisions between rectangles only
+//Bounding boxes collision
+//Best Method
 int checkCollision(string name, float dx, float dy){
     int colleft=0,colright=0,colbottom=0,coltop=0;
     for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
@@ -504,6 +510,33 @@ int checkCollision(string name, float dx, float dy){
         objects[colliding]=col_object;
     }
     return colleft+colright+colbottom+coltop;
+}
+
+//Check collision b/w rectangles or spheres
+//This is not accurate or efficient but is useful when we have rotated objects since standard collision checks dont work well for rotated objects
+//Call this function either with dx or dy only not both!
+int checkCollisionSphere(string name,float dx, float dy){
+    int collide=0;
+    for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
+        string colliding = it2->first;
+        Sprite col_object = it2->second;
+        Sprite my_object = objects[name];
+        if(colliding!=name && col_object.radius!=-1){ //Check collision only with circles and rectangles
+            if((my_object.x-col_object.x)*(my_object.x-col_object.x)+(my_object.y-col_object.y)*(my_object.y-col_object.y)<(my_object.radius+col_object.radius)*(my_object.radius+col_object.radius))
+            {
+                if(dx!=0){
+                    my_object.x-=dx;
+                }
+                else if(dy!=0){
+                    my_object.y-=dy;
+                }
+                collide=1;
+            }
+        }
+        objects[name]=my_object;
+        objects[colliding]=col_object;
+    }
+    return collide;
 }
 
 /* Render the scene with openGL */
@@ -545,8 +578,10 @@ void draw ()
         else if(objects[current].x_speed<0)
             objects[current].x_speed+=airResistance;
         pair<float,float> position = moveObject(current,objects[current].x_speed,0);
+        //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
         checkCollision(current,objects[current].x_speed,0); //Always call the checkCollision function with only 1 position change at a time!
         position = moveObject(current,0,objects[current].y_speed);
+        //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
         checkCollision(current,0,objects[current].y_speed);
         position = moveObject(current,0,0); //Just get the current coordinates of the object
         if(position.second <= 0){
@@ -661,7 +696,7 @@ void initGL (GLFWwindow* window, int width, int height)
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
     createRectangle("vishrectangle",vishcolor,1.5,0,0.2,0.2); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-1,0,0.1,1.0); 
+    createRectangle("vishrectangle2",vishcolor,-1,0,0.3,0.3); 
     //createCircle("vishcircle",vishcolor,0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
