@@ -42,6 +42,7 @@ struct Sprite {
     float x_speed,y_speed;
     int inAir;
     float radius;
+    int fixed;
 };
 typedef struct Sprite Sprite;
 
@@ -377,6 +378,7 @@ void createTriangle (string name, COLOR color, float x[], float y[])
   vishsprite.x_speed=0;
   vishsprite.y_speed=0;
   vishsprite.radius=-1; //The bounding circle radius is not defined.
+  vishsprite.fixed=0;
   objects[name]=vishsprite;
 }
 
@@ -419,6 +421,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
   vishsprite.inAir=0;
   vishsprite.x_speed=0;
   vishsprite.y_speed=0;
+  vishsprite.fixed=0;
   vishsprite.radius=(sqrt(height*height+width*width))/2;
   objects[name]=vishsprite;
 }
@@ -463,6 +466,7 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.x_speed=0;
     vishsprite.y_speed=0;
     vishsprite.radius=r;
+    vishsprite.fixed=0;
     objects[name]=vishsprite;
 }
 
@@ -570,7 +574,7 @@ void draw ()
     string current = it->first; //The name of the current object
     if(objects[current].status==0)
         continue;
-    if(objects[current].inAir){
+    if(objects[current].inAir && objects[current].fixed==0){
         if(objects[current].y_speed>=-0.2)
             objects[current].y_speed-=gravity;
         if(objects[current].x_speed>0)
@@ -695,8 +699,13 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,1.5,0,0.2,0.2); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-1,0,0.3,0.3); 
+    createRectangle("vishrectangle",vishcolor,1.5,1,0.2,0.2); //Generate sprites
+    createRectangle("vishrectangle2",vishcolor,-1,0.5,0.3,1); 
+    createRectangle("floor",vishcolor,0,0,0.3,6);
+    createRectangle("roof",vishcolor,0,4,0.3,6);
+    createRectangle("wall1",vishcolor,-3,2,4,0.3);
+    createRectangle("wall2",vishcolor,3,2,4,0.3);
+    objects["floor"].fixed=1;
     //createCircle("vishcircle",vishcolor,0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
