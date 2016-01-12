@@ -284,15 +284,22 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 	}
 }
 
+double mouse_x,mouse_y;
+double mouse_x_old,mouse_y_old;
+
 /* Executed when a mouse button is pressed/released */
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
+            if (action == GLFW_PRESS) {
+                glfwGetCursorPos(window,&mouse_x_old,&mouse_y_old);
+            }
             if (action == GLFW_RELEASE) {
+                glfwGetCursorPos(window,&mouse_x,&mouse_y);
                 objects["vishrectangle"].inAir = 1;
-                objects["vishrectangle"].y_speed = 0.1;
-                objects["vishrectangle"].x_speed = -0.15;
+                objects["vishrectangle"].y_speed = -(mouse_y_old-mouse_y)/1000;
+                objects["vishrectangle"].x_speed = (mouse_x_old-mouse_x)/1000;
                 triangle_rot_dir *= -1;
             }
             break;
@@ -531,7 +538,8 @@ void draw ()
     if(objects[current].status==0)
         continue;
     if(objects[current].inAir){
-        objects[current].y_speed-=gravity;
+        if(objects[current].y_speed>=-0.2)
+            objects[current].y_speed-=gravity;
         if(objects[current].x_speed>0)
             objects[current].x_speed-=airResistance;
         else if(objects[current].x_speed<0)
