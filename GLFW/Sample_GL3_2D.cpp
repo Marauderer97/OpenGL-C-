@@ -494,21 +494,37 @@ int checkCollision(string name, float dx, float dy){
         Sprite my_object = objects[name];
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if(dx>0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
+                if(col_object.fixed==0){
+                    col_object.x_speed=my_object.x_speed/2;
+                    col_object.inAir=1;
+                }
                 my_object.x_speed*=-1;
-                my_object.x_speed/=2;
+                my_object.x_speed/=1.6;
                 my_object.x=col_object.x-col_object.width/2-my_object.width/2;
             }
             else if(dx<0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
+                if(col_object.fixed==0){
+                    col_object.x_speed=my_object.x_speed/2;
+                    col_object.inAir=1;
+                }
                 my_object.x_speed*=-1;
-                my_object.x_speed/=2;
+                my_object.x_speed/=1.6;
                 my_object.x=col_object.x+col_object.width/2+my_object.width/2;
             }
             if(dy>0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
+                if(col_object.fixed==0){
+                    col_object.y_speed=my_object.y_speed/2;
+                    col_object.inAir=1;
+                }
                 my_object.y_speed*=-1;
                 my_object.y_speed/=2;
                 my_object.y=col_object.y-col_object.height/2-my_object.height/2;
             }
             else if(dy<0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
+                if(col_object.fixed==0){
+                    col_object.y_speed=my_object.y_speed/2;
+                    col_object.inAir=1;
+                }
                 if(abs(objects[name].y_speed)<=0.05){
                     my_object.y_speed=0;
                     my_object.x_speed=0;
@@ -538,11 +554,19 @@ int checkCollisionSphere(string name,float dx, float dy){
             if((my_object.x-col_object.x)*(my_object.x-col_object.x)+(my_object.y-col_object.y)*(my_object.y-col_object.y)<(my_object.radius+col_object.radius)*(my_object.radius+col_object.radius))
             {
                 if(dx!=0){
+                    if(col_object.fixed==0){
+                        col_object.x_speed=my_object.x_speed/2;
+                        col_object.inAir=1;
+                    }
                     my_object.x-=dx;
                     my_object.x_speed*=-1;
                     my_object.x_speed/=2;
                 }
                 else if(dy!=0){
+                    if(col_object.fixed==0){
+                        col_object.y_speed=my_object.y_speed/2;
+                        col_object.inAir=1;
+                    }
                     my_object.y-=dy;
                     my_object.y_speed*=-1;
                     my_object.y_speed/=2;
@@ -590,6 +614,11 @@ void draw ()
 
   for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
     string current = it->first; //The name of the current object
+    if(objects[current].fixed==0 && objects[current].inAir==0 && objects[current].y_speed==0 && current!="vishrectangle"){
+        if(!checkCollision(current,0,0)){
+            objects[current].inAir=1;
+        }
+    }
     if(objects[current].status==0)
         continue;
     if(objects[current].inAir && objects[current].fixed==0){
@@ -711,12 +740,18 @@ void initGL (GLFWwindow* window, int width, int height)
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
     createRectangle("vishrectangle",vishcolor,1.5,1,0.1,0.1); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-1,0.5,0.3,1); 
+    createRectangle("vishrectangle2",vishcolor,-1,0.5,0.3,0.3); 
+    createRectangle("vishrectangle3",vishcolor,-1,1,0.3,0.3); 
+    createRectangle("vishrectangle4",vishcolor,-1,1.5,0.3,0.3); 
+    createRectangle("vishrectangle5",vishcolor,-1,2,0.3,0.3); 
     createRectangle("floor",vishcolor,0,-2,0.3,8);
-    createRectangle("roof",vishcolor,0,4,0.3,8);
-    createRectangle("wall1",vishcolor,-4,1,6,0.3);
-    createRectangle("wall2",vishcolor,4,1,6,0.3);
     objects["floor"].fixed=1;
+    createRectangle("roof",vishcolor,0,4,0.3,8);
+    objects["roof"].fixed=1;
+    createRectangle("wall1",vishcolor,-4,1,6,0.3);
+    objects["wall1"].fixed=1;
+    createRectangle("wall2",vishcolor,4,1,6,0.3);
+    objects["wall2"].fixed=1;
     //createCircle("vishcircle",vishcolor,0,0,0.5,15);
 	
 	// Create and compile our GLSL program from the shaders
