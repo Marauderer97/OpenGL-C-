@@ -568,7 +568,8 @@ int checkCollision(string name, float dx, float dy){
     return any_collide;
 }
 
-//Check collision b/w rectangles or spheres
+//Check collision b/w rectangles or spheres, terrible if height is too different from width (Since circle will be way too large)
+//This won't work for the walls of our box so we won't use this
 //This is not accurate or efficient but is useful when we have rotated objects since standard collision checks dont work well for rotated objects
 //Call this function either with dx or dy only not both!
 int checkCollisionSphere(string name,float dx, float dy){
