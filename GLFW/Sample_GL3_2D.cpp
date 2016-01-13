@@ -62,6 +62,7 @@ map <string, Sprite> objects;
 
 float gravity = 1;
 float airResistance = 0.7;
+int player_reset_timer=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name].x+=dx;
@@ -291,6 +292,7 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
     }
 }
 
+int player_status=0; //0 is ready to play, 1 is not ready yet
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
 
@@ -303,18 +305,21 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                 glfwGetCursorPos(window,&mouse_x_old,&mouse_y_old);
             }
             if (action == GLFW_RELEASE) {
-                glfwGetCursorPos(window,&mouse_x,&mouse_y);
-                if(objects["vishrectangle"].inAir == 0){
-                    objects["vishrectangle"].inAir = 1;
-                    //Set max jump speeds here (currently 300 and 300)
-                    if(mouse_y_old-mouse_y==0)
-                        objects["vishrectangle"].y_speed=0;
-                    else
-                        objects["vishrectangle"].y_speed = -120*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
-                    if(mouse_x_old-mouse_x==0)
-                        objects["vishrectangle"].x_speed=0;
-                    else
-                        objects["vishrectangle"].x_speed = 120*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                if(player_status==0){
+                    player_status=1;
+                    glfwGetCursorPos(window,&mouse_x,&mouse_y);
+                    if(objects["vishrectangle"].inAir == 0){
+                        objects["vishrectangle"].inAir = 1;
+                        //Set max jump speeds here (currently 300 and 300)
+                        if(mouse_y_old-mouse_y==0)
+                            objects["vishrectangle"].y_speed=0;
+                        else
+                            objects["vishrectangle"].y_speed = -120*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
+                        if(mouse_x_old-mouse_x==0)
+                            objects["vishrectangle"].x_speed=0;
+                        else
+                            objects["vishrectangle"].x_speed = 120*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                    }
                 }
                 triangle_rot_dir *= -1;
             }
@@ -567,10 +572,12 @@ int checkCollision(string name, float dx, float dy){
                         col_object.remAngle=90;
                     }
                 }
-                if(abs(objects[name].y_speed)<=7.5){
+                if(abs(objects[name].y_speed)<=7.5){ 
                     my_object.y_speed=0;
                     my_object.x_speed=0;
                     my_object.inAir=0;
+                    if(name=="vishrectangle" && player_reset_timer==0 && player_status==1)
+                        player_reset_timer=30;
                 }
                 my_object.y_speed*=-1;
                 my_object.y_speed/=2;
@@ -645,10 +652,19 @@ int checkCollisionSphere(string name,float dx, float dy){
     return collide;
 }
 
+
 /* Render the scene with openGL */
 /* Edit this function according to your assignment */
 void draw ()
 {
+    if(player_reset_timer>0){
+        player_reset_timer-=1;
+        if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
+            player_status=0;
+            objects["vishrectangle"].y=-290;
+            objects["vishrectangle"].x=300;
+        }
+    }
     // clear the color and depth in the frame buffer
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -816,7 +832,7 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,300,150,20,20); //Generate sprites
+    createRectangle("vishrectangle",vishcolor,300,-290,20,20); //Generate sprites
     createRectangle("vishrectangle2",vishcolor,-200,30,30,30);
     createRectangle("vishrectangle3",vishcolor,-200,60,30,30);
     createRectangle("vishrectangle4",vishcolor,-200,90,30,30);
