@@ -587,7 +587,7 @@ int checkCollision(string name, float dx, float dy){
                         col_object.remAngle=90;
                     }
                 }
-                if(abs(objects[name].y_speed)<=7.5){ 
+                if(abs(objects[name].y_speed)<=7.5 && abs(objects[name].x_speed)<=7.5){ 
                     my_object.y_speed=0;
                     my_object.x_speed=0;
                     my_object.inAir=0;
