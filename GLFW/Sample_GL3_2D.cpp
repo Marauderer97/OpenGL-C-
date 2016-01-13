@@ -57,8 +57,8 @@ struct GLMatrices {
 
 map <string, Sprite> objects;
 
-float gravity = 0.01;
-float airResistance = 0.003;
+float gravity = 1;
+float airResistance = 0.7;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name].x+=dx;
@@ -307,11 +307,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                     if(mouse_y_old-mouse_y==0)
                         objects["vishrectangle"].y_speed=0;
                     else
-                        objects["vishrectangle"].y_speed = -(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
+                        objects["vishrectangle"].y_speed = -120*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
                     if(mouse_x_old-mouse_x==0)
                         objects["vishrectangle"].x_speed=0;
                     else
-                        objects["vishrectangle"].x_speed = (((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                        objects["vishrectangle"].x_speed = 120*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
                 }
                 triangle_rot_dir *= -1;
             }
@@ -350,7 +350,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
     // Matrices.projection = glm::perspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1f, 500.0f);
 
     // Ortho projection for 2D views
-    Matrices.projection = glm::ortho(-4.0f, 4.0f, -4.0f, 4.0f, 0.1f, 500.0f);
+    Matrices.projection = glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, 0.1f, 500.0f);
 }
 
 
@@ -462,7 +462,7 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
         vertex_buffer_data[i*9+3]=radius*cos(current_angle);
         vertex_buffer_data[i*9+4]=radius*sin(current_angle);
         vertex_buffer_data[i*9+5]=0;
-	    vertex_buffer_data[i*9+6]=radius*cos(current_angle+angle);
+        vertex_buffer_data[i*9+6]=radius*cos(current_angle+angle);
         vertex_buffer_data[i*9+7]=radius*sin(current_angle+angle);
         vertex_buffer_data[i*9+8]=0;
     	current_angle+=angle;
@@ -544,7 +544,7 @@ int checkCollision(string name, float dx, float dy){
                     col_object.y_speed=my_object.y_speed/2;
                     col_object.inAir=1;
                 }
-                if(abs(objects[name].y_speed)<=0.05){
+                if(abs(objects[name].y_speed)<=7.5){
                     my_object.y_speed=0;
                     my_object.x_speed=0;
                     my_object.inAir=0;
@@ -600,7 +600,7 @@ int checkCollisionSphere(string name,float dx, float dy){
                     my_object.y-=dy;
                     my_object.y_speed*=-1;
                     my_object.y_speed/=2;
-                    if(abs(my_object.y_speed)<=0.05){
+                    if(abs(my_object.y_speed)<=7.5){
                         my_object.y_speed=0;
                         my_object.x_speed=0;
                         my_object.inAir=0;
@@ -653,13 +653,13 @@ void draw ()
     string current = it->first; //The name of the current object
     if(objects[current].status==0)
         continue;
-    if(objects[current].fixed==0 && objects[current].inAir==0 && objects[current].y_speed==0 && current!="vishrectangle"){
+    if(objects[current].fixed==0 && objects[current].inAir==0 && objects[current].y_speed==0){
         if(!checkCollision(current,0,0)){
             objects[current].inAir=1;
         }
     }
     if(objects[current].inAir && objects[current].fixed==0){
-        if(objects[current].y_speed>=-0.2)
+        if(objects[current].y_speed>=-30)
             objects[current].y_speed-=gravity;
         if(objects[current].x_speed>0)
             objects[current].x_speed-=airResistance;
@@ -776,21 +776,21 @@ void initGL (GLFWwindow* window, int width, int height)
     float x[] = {0.0,0.0,1.0};
     float y[] = {0.0,1.0,1.0};
 	//createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,1.5,1,0.1,0.1); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-1,0.5,0.3,0.3); 
-    createRectangle("vishrectangle3",vishcolor,-1,1,0.3,0.3); 
-    createRectangle("vishrectangle4",vishcolor,-1,1.5,0.3,0.3); 
-    createRectangle("vishrectangle5",vishcolor,-1,2,0.3,0.3); 
-    createRectangle("floor",vishcolor,0,-2,0.3,8);
+    createRectangle("vishrectangle",vishcolor,300,150,20,20); //Generate sprites
+    createRectangle("vishrectangle2",vishcolor,-200,30,30,30); 
+    createRectangle("vishrectangle3",vishcolor,-200,60,30,30); 
+    createRectangle("vishrectangle4",vishcolor,-200,90,30,30); 
+    createRectangle("vishrectangle5",vishcolor,-200,120,30,30);
+    createRectangle("floor",vishcolor,0,-300,60,800);
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("roof",vishcolor,0,4,0.3,8);
+    createRectangle("roof",vishcolor,0,300,60,800);
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",vishcolor,-4,1,6,0.3);
+    createRectangle("wall1",vishcolor,-400,0,600,60);
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",vishcolor,4,1,6,0.3);
+    createRectangle("wall2",vishcolor,400,0,600,60);
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     //createCircle("vishcircle",vishcolor,0,0,0.5,15);
@@ -818,8 +818,8 @@ void initGL (GLFWwindow* window, int width, int height)
 
 int main (int argc, char** argv)
 {
-	int width = 700;
-	int height = 700;
+	int width = 800;
+	int height = 600;
 
     GLFWwindow* window = initGLFW(width, height);
 
