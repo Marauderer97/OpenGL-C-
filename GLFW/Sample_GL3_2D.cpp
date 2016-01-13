@@ -306,10 +306,12 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_PRESS) {
                 mouse_clicked=1;
+                cannonObjects["cannonaim"].status=1;
                 glfwGetCursorPos(window,&mouse_x_old,&mouse_y_old);
             }
             if (action == GLFW_RELEASE) {
                 mouse_clicked=0;
+                cannonObjects["cannonaim"].status=0;
                 if(player_status==0){
                     player_status=1;
                     glfwGetCursorPos(window,&mouse_x,&mouse_y);
@@ -461,7 +463,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
         objects[name]=vishsprite;
 }
 
-void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts, string component)
+void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts, string component, int fill)
 {
     int parts = NoOfParts;
     float radius = r;
@@ -487,7 +489,11 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
         vertex_buffer_data[i*9+8]=0;
         current_angle+=angle;
     }
-    VAO *circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
+    VAO* circle;
+    if(fill==1)
+        circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_FILL);
+    else
+        circle = create3DObject(GL_TRIANGLES, (parts*9)/3, vertex_buffer_data, color_buffer_data, GL_LINE);
     Sprite vishsprite = {};
     vishsprite.color = color;
     vishsprite.name = name;
@@ -719,6 +725,8 @@ void draw (GLFWwindow* window)
     //Draw the cannon
     for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
         string current = it->first; //The name of the current object
+        if(cannonObjects[current].status==0)
+            continue;
         // Send our transformation to the currently bound shader, in the "MVP" uniform
         // For each model you render, since the MVP will be different (at least the M part)
         //  Don't change unless you are sure!!
@@ -894,7 +902,7 @@ void initGL (GLFWwindow* window, int width, int height)
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createCircle("vishrectangle",vishcolor,320,-290,15,10,""); //Generate sprites
+    createCircle("vishrectangle",vishcolor,320,-290,15,10,"",1); //Generate sprites
     createRectangle("vishrectangle2",vishcolor,-200,30,30,30,"");
     createRectangle("vishrectangle3",vishcolor,-200,60,30,30,"");
     createRectangle("vishrectangle4",vishcolor,-200,90,30,30,"");
@@ -912,7 +920,9 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannoncircle",vishcolor,320,-240,40,10,"cannon");
+    createCircle("cannoncircle",vishcolor,320,-240,40,10,"cannon",1);
+    createCircle("cannonaim",vishcolor,320,-240,150,12,"cannon",0);
+    cannonObjects["cannonaim"].status=0;
     createRectangle("cannonrectangle",vishcolor,280,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=-45;
 
