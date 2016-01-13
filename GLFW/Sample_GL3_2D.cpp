@@ -707,14 +707,14 @@ void draw ()
 
     glm::mat4 triangleTransform;
     if (objects[current].isRotating==1 && current!="vishrectangle"){
-        objects[current].remAngle-=10;
+        objects[current].remAngle-=7;
         float rotationAngle = 90-objects[current].remAngle;
-        float xShift = 5;
+        float xShift = -1.3;
         if(objects[current].direction==0){
             rotationAngle*=-1;
             xShift*=-1;
         }
-        moveObject("vishrectangle",xShift,0);
+        moveObject(current,xShift,0);
         glm::mat4 rotateTriangle = glm::rotate((float)((rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
         if(objects[current].remAngle<=0){
             rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
