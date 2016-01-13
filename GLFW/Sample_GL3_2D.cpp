@@ -63,7 +63,7 @@ map <string, Sprite> objects;
 map <string, Sprite> cannonObjects; //Only store cannon components here
 
 float gravity = 1;
-float airResistance = 0.4;
+float airResistance = 0.2;
 int player_reset_timer=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
@@ -912,8 +912,8 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannoncircle",vishcolor,320,-240,30,10,"cannon");
-    createRectangle("cannonrectangle",vishcolor,280,-240,30,80,"cannon");
+    createCircle("cannoncircle",vishcolor,320,-240,40,10,"cannon");
+    createRectangle("cannonrectangle",vishcolor,280,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=-45;
 
     // Create and compile our GLSL program from the shaders
