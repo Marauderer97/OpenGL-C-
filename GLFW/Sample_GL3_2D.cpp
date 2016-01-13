@@ -45,6 +45,9 @@ struct Sprite {
     int fixed;
     float friction; //Value from 0 to 1
     int health;
+    int isRotating;
+    int direction; //0 for clockwise and 1 for anticlockwise
+    float remAngle;
 };
 typedef struct Sprite Sprite;
 
@@ -513,6 +516,11 @@ int checkCollision(string name, float dx, float dy){
                 if(col_object.fixed==0){
                     col_object.x_speed=my_object.x_speed/2;
                     col_object.inAir=1;
+                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
+                        col_object.isRotating=1;
+                        col_object.direction=0;
+                        col_object.remAngle=90;
+                    }
                 }
                 my_object.x_speed*=-1;
                 my_object.x_speed/=(1+col_object.friction);
@@ -523,6 +531,11 @@ int checkCollision(string name, float dx, float dy){
                 if(col_object.fixed==0){
                     col_object.x_speed=my_object.x_speed/2;
                     col_object.inAir=1;
+                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
+                        col_object.isRotating=1;
+                        col_object.direction=1;
+                        col_object.remAngle=90;
+                    }
                 }
                 my_object.x_speed*=-1;
                 my_object.x_speed/=(1+col_object.friction);
@@ -533,6 +546,11 @@ int checkCollision(string name, float dx, float dy){
                 if(col_object.fixed==0){
                     col_object.y_speed=my_object.y_speed/2;
                     col_object.inAir=1;
+                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
+                        col_object.isRotating=1;
+                        col_object.direction=0;
+                        col_object.remAngle=90;
+                    }
                 }
                 my_object.y_speed*=-1;
                 my_object.y_speed/=2;
@@ -543,6 +561,11 @@ int checkCollision(string name, float dx, float dy){
                 if(col_object.fixed==0){
                     col_object.y_speed=my_object.y_speed/2;
                     col_object.inAir=1;
+                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
+                        col_object.isRotating=1;
+                        col_object.direction=1;
+                        col_object.remAngle=90;
+                    }
                 }
                 if(abs(objects[name].y_speed)<=7.5){
                     my_object.y_speed=0;
@@ -682,9 +705,25 @@ void draw ()
 
     /* Render your scene */
 
+    glm::mat4 triangleTransform;
+    if (objects[current].isRotating==1 && current!="vishrectangle"){
+        objects[current].remAngle-=10;
+        float rotationAngle = 90-objects[current].remAngle;
+        float xShift = 5;
+        if(objects[current].direction==0){
+            rotationAngle*=-1;
+            xShift*=-1;
+        }
+        moveObject("vishrectangle",xShift,0);
+        glm::mat4 rotateTriangle = glm::rotate((float)((rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        if(objects[current].remAngle<=0){
+            rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+            objects[current].isRotating=0;
+        }
+        triangleTransform=rotateTriangle;
+    }
     glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
-    //glm::mat4 rotateTriangle = glm::rotate((float)(triangle_rotation*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-    glm::mat4 triangleTransform = translateTriangle;
+    triangleTransform=translateTriangle*triangleTransform;
     Matrices.model *= triangleTransform; 
     MVP = VP * Matrices.model; // MVP = p * V * M
 
