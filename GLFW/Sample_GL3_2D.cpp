@@ -40,14 +40,15 @@ struct Sprite {
     int status;
     float height,width;
     float x_speed,y_speed;
+    float angle; //Current Angle (Actual rotated angle of the object)
     int inAir;
     float radius;
     int fixed;
     float friction; //Value from 0 to 1
     int health;
     int isRotating;
-    int direction; //0 for clockwise and 1 for anticlockwise
-    float remAngle;
+    int direction; //0 for clockwise and 1 for anticlockwise for animation
+    float remAngle; //the remaining angle to finish animation
 };
 typedef struct Sprite Sprite;
 
@@ -59,9 +60,10 @@ struct GLMatrices {
 } Matrices;
 
 map <string, Sprite> objects;
+map <string, Sprite> cannonObjects; //Only store cannon components here
 
 float gravity = 1;
-float airResistance = 0.7;
+float airResistance = 0.6;
 int player_reset_timer=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
@@ -293,6 +295,7 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 }
 
 int player_status=0; //0 is ready to play, 1 is not ready yet
+int mouse_clicked=0;
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
 
@@ -302,23 +305,26 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_PRESS) {
+                mouse_clicked=1;
                 glfwGetCursorPos(window,&mouse_x_old,&mouse_y_old);
             }
             if (action == GLFW_RELEASE) {
+                mouse_clicked=0;
                 if(player_status==0){
                     player_status=1;
                     glfwGetCursorPos(window,&mouse_x,&mouse_y);
                     if(objects["vishrectangle"].inAir == 0){
                         objects["vishrectangle"].inAir = 1;
-                        //Set max jump speeds here (currently 300 and 300)
+                        //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
+                        //Also adjust the sensitivity of the mouse drag as required
                         if(mouse_y_old-mouse_y==0)
                             objects["vishrectangle"].y_speed=0;
                         else
-                            objects["vishrectangle"].y_speed = -120*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
+                            objects["vishrectangle"].y_speed = -250*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
                         if(mouse_x_old-mouse_x==0)
                             objects["vishrectangle"].x_speed=0;
                         else
-                            objects["vishrectangle"].x_speed = 120*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                            objects["vishrectangle"].x_speed = -140*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
                     }
                 }
                 triangle_rot_dir *= -1;
@@ -363,7 +369,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 
 
 // Creates the triangle object used in this sample code
-void createTriangle (string name, COLOR color, float x[], float y[])
+void createTriangle (string name, COLOR color, float x[], float y[], string component)
 {
     /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
@@ -400,11 +406,14 @@ void createTriangle (string name, COLOR color, float x[], float y[])
     vishsprite.fixed=0;
     vishsprite.friction=0.2;
     vishsprite.health=100;
-    objects[name]=vishsprite;
+    if(component=="cannon")
+        cannonObjects[name]=vishsprite;
+    else
+        objects[name]=vishsprite;
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (string name, COLOR color, float x, float y, float height, float width)
+void createRectangle (string name, COLOR color, float x, float y, float height, float width, string component)
 {
     // GL3 accepts only Triangles. Quads are not supported
     float w=width/2,h=height/2;
@@ -446,10 +455,13 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
     vishsprite.radius=(sqrt(height*height+width*width))/2;
     vishsprite.friction=0.2;
     vishsprite.health=100;
-    objects[name]=vishsprite;
+    if(component=="cannon")
+        cannonObjects[name]=vishsprite;
+    else
+        objects[name]=vishsprite;
 }
 
-void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts)
+void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts, string component)
 {
     int parts = NoOfParts;
     float radius = r;
@@ -492,7 +504,10 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.fixed=0;
     vishsprite.friction=0.2;
     vishsprite.health=100;
-    objects[name]=vishsprite;
+    if(component=="cannon")
+        cannonObjects[name]=vishsprite;
+    else
+        objects[name]=vishsprite;
 }
 
 float camera_rotation_angle = 90;
@@ -655,8 +670,21 @@ int checkCollisionSphere(string name,float dx, float dy){
 
 /* Render the scene with openGL */
 /* Edit this function according to your assignment */
-void draw ()
+void draw (GLFWwindow* window)
 {
+    if (mouse_clicked==1) {
+        float angle=0;
+        double mouse_x_cur;
+        double mouse_y_cur;
+        glfwGetCursorPos(window,&mouse_x_cur,&mouse_y_cur);
+        if(mouse_x_cur==800)
+            angle=90;
+        else{
+            angle=atan(abs(mouse_y_cur-600)/abs(mouse_x_cur-800)); 
+            angle*=180/M_PI;
+        }
+        cannonObjects["cannonrectangle"].angle=-angle;
+    }
     if(player_reset_timer>0){
         player_reset_timer-=1;
         if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
@@ -687,6 +715,39 @@ void draw ()
     // Compute ViewProject matrix as view/camera might not be changed for this frame (basic scenario)
     //  Don't change unless you are sure!!
     glm::mat4 VP = Matrices.projection * Matrices.view;
+
+    //Draw the cannon
+    for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+        string current = it->first; //The name of the current object
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;	// MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(cannonObjects[current].x, cannonObjects[current].y, 0.0f)); // glTranslatef
+        float x_diff,y_diff;
+        x_diff=abs(cannonObjects["cannoncircle"].x-cannonObjects[current].x);
+        y_diff=abs(cannonObjects["cannoncircle"].y-cannonObjects[current].y);
+        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(x_diff, -y_diff, 0.0f)); // glTranslatef
+        glm::mat4 rotateTriangle = glm::rotate((float)((cannonObjects[current].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(-x_diff, y_diff, 0.0f)); // glTranslatef
+        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(cannonObjects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
 
     for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
         string current = it->first; //The name of the current object
@@ -740,7 +801,8 @@ void draw ()
             triangleTransform=rotateTriangle;
         }
         glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle*triangleTransform;
+        glm::mat4 rotateTriangleAct = glm::rotate((float)(objects[current].angle*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        triangleTransform=translateTriangle*triangleTransform*rotateTriangleAct;
         Matrices.model *= triangleTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
@@ -829,27 +891,30 @@ void initGL (GLFWwindow* window, int width, int height)
 
     COLOR vishcolor = {0,1,1};
 
-    float x[] = {0.0,0.0,1.0};
-    float y[] = {0.0,1.0,1.0};
+    //float x[] = {0.0,0.0,1.0};
+    //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,300,-290,20,20); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-200,30,30,30);
-    createRectangle("vishrectangle3",vishcolor,-200,60,30,30);
-    createRectangle("vishrectangle4",vishcolor,-200,90,30,30);
-    createRectangle("vishrectangle5",vishcolor,-200,120,30,30);
-    createRectangle("floor",vishcolor,0,-300,60,800);
+    createRectangle("vishrectangle",vishcolor,300,-290,20,20,""); //Generate sprites
+    createRectangle("vishrectangle2",vishcolor,-200,30,30,30,"");
+    createRectangle("vishrectangle3",vishcolor,-200,60,30,30,"");
+    createRectangle("vishrectangle4",vishcolor,-200,90,30,30,"");
+    createRectangle("vishrectangle5",vishcolor,-200,120,30,30,"");
+    createRectangle("floor",vishcolor,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("roof",vishcolor,0,300,60,800);
+    createRectangle("roof",vishcolor,0,300,60,800,"");
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",vishcolor,-400,0,600,60);
+    createRectangle("wall1",vishcolor,-400,0,600,60,"");
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",vishcolor,400,0,600,60);
+    createRectangle("wall2",vishcolor,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
-    //createCircle("vishcircle",vishcolor,0,0,0.5,15);
+    
+    createCircle("cannoncircle",vishcolor,320,-240,30,10,"cannon");
+    createRectangle("cannonrectangle",vishcolor,280,-240,30,80,"cannon");
+    cannonObjects["cannonrectangle"].angle=-45;
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
@@ -887,7 +952,7 @@ int main (int argc, char** argv)
     while (!glfwWindowShouldClose(window)) {
 
         // OpenGL Draw commands
-        draw();
+        draw(window);
 
         // Swap Frame Buffer in double buffering
         glfwSwapBuffers(window);
