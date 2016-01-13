@@ -63,7 +63,7 @@ map <string, Sprite> objects;
 map <string, Sprite> cannonObjects; //Only store cannon components here
 
 float gravity = 1;
-float airResistance = 0.6;
+float airResistance = 0.4;
 int player_reset_timer=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
@@ -320,11 +320,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                         if(mouse_y_old-mouse_y==0)
                             objects["vishrectangle"].y_speed=0;
                         else
-                            objects["vishrectangle"].y_speed = -250*(((mouse_y_old-mouse_y)/(abs(mouse_y_old-mouse_y))/1000)*min(abs(mouse_y_old-mouse_y),300.0));
+                            objects["vishrectangle"].y_speed = min((545-mouse_y)/15,30.0);
                         if(mouse_x_old-mouse_x==0)
                             objects["vishrectangle"].x_speed=0;
                         else
-                            objects["vishrectangle"].x_speed = -140*(((mouse_x_old-mouse_x)/(abs(mouse_x_old-mouse_x))/1000)*min(abs(mouse_x_old-mouse_x),300.0));
+                            objects["vishrectangle"].x_speed = max(-(720-mouse_x)/15,-35.0);
                     }
                 }
                 triangle_rot_dir *= -1;
@@ -690,7 +690,7 @@ void draw (GLFWwindow* window)
         if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
             player_status=0;
             objects["vishrectangle"].y=-290;
-            objects["vishrectangle"].x=300;
+            objects["vishrectangle"].x=320;
         }
     }
     // clear the color and depth in the frame buffer
@@ -894,7 +894,7 @@ void initGL (GLFWwindow* window, int width, int height)
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("vishrectangle",vishcolor,300,-290,20,20,""); //Generate sprites
+    createCircle("vishrectangle",vishcolor,320,-290,15,10,""); //Generate sprites
     createRectangle("vishrectangle2",vishcolor,-200,30,30,30,"");
     createRectangle("vishrectangle3",vishcolor,-200,60,30,30,"");
     createRectangle("vishrectangle4",vishcolor,-200,90,30,30,"");
