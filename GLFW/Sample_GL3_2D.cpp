@@ -715,6 +715,7 @@ void draw ()
             xShift*=-1;
         }
         moveObject(current,xShift,0);
+        checkCollision(current,xShift,0);
         glm::mat4 rotateTriangle = glm::rotate((float)((rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
         if(objects[current].remAngle<=0){
             rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
