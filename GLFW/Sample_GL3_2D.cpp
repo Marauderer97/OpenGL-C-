@@ -62,6 +62,7 @@ struct GLMatrices {
 map <string, Sprite> objects;
 map <string, Sprite> cannonObjects; //Only store cannon components here
 map <string, Sprite> coins;
+map <string, Sprite> backgroundObjects;
 
 float gravity = 1;
 float airResistance = 0.2;
@@ -327,7 +328,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                         if(mouse_x_old-mouse_x==0)
                             objects["vishrectangle"].x_speed=0;
                         else
-                            objects["vishrectangle"].x_speed = max(-(720-mouse_x)/15,-35.0);
+                            objects["vishrectangle"].x_speed = max(-(720-mouse_x)/15,-30.0);
                     }
                 }
                 triangle_rot_dir *= -1;
@@ -411,6 +412,8 @@ void createTriangle (string name, COLOR color, float x[], float y[], string comp
     vishsprite.health=100;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
+    else if(component=="background")
+        backgroundObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -460,6 +463,8 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
     vishsprite.health=100;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
+    else if(component=="background")
+        backgroundObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -515,6 +520,8 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
         cannonObjects[name]=vishsprite;
     else if(component=="coin")
         coins[name]=vishsprite;
+    else if(component=="background")
+        backgroundObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -780,6 +787,34 @@ void draw (GLFWwindow* window)
     //  Don't change unless you are sure!!
     glm::mat4 VP = Matrices.projection * Matrices.view;
 
+    for(map<string,Sprite>::iterator it=backgroundObjects.begin();it!=backgroundObjects.end();it++){
+        string current = it->first; //The name of the current object
+        if(backgroundObjects[current].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(backgroundObjects[current].x, backgroundObjects[current].y, 0.0f)); // glTranslatef
+        triangleTransform=translateTriangle;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(backgroundObjects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
     //Draw the coins
     for(map<string,Sprite>::iterator it=coins.begin();it!=coins.end();it++){
         string current = it->first; //The name of the current object
@@ -1001,10 +1036,17 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR cratebrown = {153/255.0,102/255.0,0/255.0};
     COLOR cratebrown1 = {121/255.0,85/255.0,0/255.0};
     COLOR cratebrown2 = {102/255.0,68/255.0,0/255.0};
+    COLOR skyblue2 = {113/255.0,185/255.0,209/255.0};
+    COLOR skyblue1 = {123/255.0,201/255.0,227/255.0};
+    COLOR skyblue = {132/255.0,217/255.0,245/255.0};
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
+    createRectangle("sky1",skyblue,0,0,600,800,"background");
+    createRectangle("sky2",skyblue1,0,-200,600,800,"background");
+    createRectangle("sky3",skyblue2,0,-400,600,800,"background");
+
     createCircle("vishrectangle",black,320,-290,15,10,"",1); //Generate sprites
     createRectangle("vishrectangle2",cratebrown,-200,30,30,30,"");
     createRectangle("vishrectangle3",cratebrown1,-200,60,30,30,"");
