@@ -26,9 +26,9 @@ struct VAO {
 typedef struct VAO VAO;
 
 struct COLOR {
-    int r;
-    int g;
-    int b;
+    float r;
+    float g;
+    float b;
 };
 typedef struct COLOR COLOR;
 
@@ -780,41 +780,6 @@ void draw (GLFWwindow* window)
     //  Don't change unless you are sure!!
     glm::mat4 VP = Matrices.projection * Matrices.view;
 
-    //Draw the cannon
-    for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
-        string current = it->first; //The name of the current object
-        if(cannonObjects[current].status==0)
-            continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
-        glm::mat4 MVP;	// MVP = Projection * View * Model
-
-        // Load identity to model matrix
-        Matrices.model = glm::mat4(1.0f);
-
-        /* Render your scene */
-        glm::mat4 triangleTransform;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(cannonObjects[current].x, cannonObjects[current].y, 0.0f)); // glTranslatef
-        float x_diff,y_diff;
-        x_diff=abs(cannonObjects["cannoncircle"].x-cannonObjects[current].x);
-        y_diff=abs(cannonObjects["cannoncircle"].y-cannonObjects[current].y);
-        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(x_diff, -y_diff, 0.0f)); // glTranslatef
-        glm::mat4 rotateTriangle = glm::rotate((float)((cannonObjects[current].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(-x_diff, y_diff, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
-        Matrices.model *= triangleTransform;
-        MVP = VP * Matrices.model; // MVP = p * V * M
-
-        //  Don't change unless you are sure!!
-        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-        // draw3DObject draws the VAO given to it using current MVP matrix
-        draw3DObject(cannonObjects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
-        //glPopMatrix (); 
-    }
-
     //Draw the coins
     for(map<string,Sprite>::iterator it=coins.begin();it!=coins.end();it++){
         string current = it->first; //The name of the current object
@@ -914,6 +879,42 @@ void draw (GLFWwindow* window)
         //glPopMatrix ();
     }
 
+    //Draw the cannon
+    for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+        string current = it->first; //The name of the current object
+        if(cannonObjects[current].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(cannonObjects[current].x, cannonObjects[current].y, 0.0f)); // glTranslatef
+        float x_diff,y_diff;
+        x_diff=abs(cannonObjects["cannoncircle"].x-cannonObjects[current].x);
+        y_diff=abs(cannonObjects["cannoncircle"].y-cannonObjects[current].y);
+        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(x_diff, -y_diff, 0.0f)); // glTranslatef
+        glm::mat4 rotateTriangle = glm::rotate((float)((cannonObjects[current].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(-x_diff, y_diff, 0.0f)); // glTranslatef
+        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(cannonObjects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
+
     /*Matrices.model = glm::mat4(1.0f);
 
       glm::mat4 translateRectangle = glm::translate (glm::vec3(2, 0, 0));        // glTranslatef
@@ -988,37 +989,54 @@ void initGL (GLFWwindow* window, int width, int height)
     /* Objects should be created before any other gl function and shaders */
     // Create the models
 
-    COLOR vishcolor = {0,1,1};
+    COLOR grey = {168.0/255.0,168.0/255.0,168.0/255.0};
+    COLOR red = {1,0,0};
+    COLOR lightgreen = {57/255.0,230/255.0,0/255.0};
+    COLOR darkgreen = {51/255.0,102/255.0,0/255.0};
+    COLOR black = {30/255.0,30/255.0,21/255.0};
+    COLOR blue = {0,0,1};
+    COLOR gold = {1,1,0};
+    COLOR darkbrown = {46/255.0,46/255.0,31/255.0};
+    COLOR lightbrown = {95/255.0,63/255.0,32/255.0};
+    COLOR cratebrown = {153/255.0,102/255.0,0/255.0};
+    COLOR cratebrown1 = {121/255.0,85/255.0,0/255.0};
+    COLOR cratebrown2 = {102/255.0,68/255.0,0/255.0};
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createCircle("vishrectangle",vishcolor,320,-290,15,10,"",1); //Generate sprites
-    createRectangle("vishrectangle2",vishcolor,-200,30,30,30,"");
-    createRectangle("vishrectangle3",vishcolor,-200,60,30,30,"");
-    createRectangle("vishrectangle4",vishcolor,-200,90,30,30,"");
-    createRectangle("vishrectangle5",vishcolor,-200,120,30,30,"");
-    createRectangle("floor",vishcolor,0,-300,60,800,"");
+    createCircle("vishrectangle",black,320,-290,15,10,"",1); //Generate sprites
+    createRectangle("vishrectangle2",cratebrown,-200,30,30,30,"");
+    createRectangle("vishrectangle3",cratebrown1,-200,60,30,30,"");
+    createRectangle("vishrectangle4",cratebrown2,-200,90,30,30,"");
+    createRectangle("vishrectangle5",cratebrown,-200,120,30,30,"");
+    createRectangle("floor",lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("roof",vishcolor,0,300,60,800,"");
+    createRectangle("floor2",darkgreen,0,-300,35,800,"");
+    objects["floor2"].fixed=1;
+    objects["floor2"].friction=0.5;
+    createRectangle("roof",grey,0,300,60,800,"");
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",vishcolor,-400,0,600,60,"");
+    createRectangle("wall1",grey,-400,0,600,60,"");
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",vishcolor,400,0,600,60,"");
+    createRectangle("wall2",grey,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannoncircle",vishcolor,320,-240,40,10,"cannon",1);
-    createCircle("cannonaim",vishcolor,320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",lightgreen,320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",vishcolor,280,-240,40,80,"cannon");
+    createRectangle("cannonrectangle",darkbrown,250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=-45;
 
-    createCircle("coin1",vishcolor,320,-40,15,12,"coin",1);
-    createCircle("coin2",vishcolor,20,-40,15,12,"coin",1);
+    createCircle("cannoncircle",darkbrown,320,-240,45,10,"cannon",1); 
+    //The objects are drawn in the lexicographic ordering of their names
+    createCircle("cannoncircle2",lightbrown,320,-240,35,10,"cannon",1);
+
+    createCircle("coin1",gold,320,-40,15,12,"coin",1);
+    createCircle("coin2",gold,20,-40,15,12,"coin",1);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
