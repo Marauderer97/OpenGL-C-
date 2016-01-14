@@ -61,6 +61,7 @@ struct GLMatrices {
 
 map <string, Sprite> objects;
 map <string, Sprite> cannonObjects; //Only store cannon components here
+map <string, Sprite> coins;
 
 float gravity = 1;
 float airResistance = 0.2;
@@ -512,6 +513,8 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.health=100;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
+    else if(component=="coin")
+        coins[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -520,11 +523,65 @@ float camera_rotation_angle = 90;
 float rectangle_rotation = 0;
 float triangle_rotation = 0;
 
+int checkCollisionRight(Sprite col_object, Sprite my_object){
+    if(col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
+        return 1;
+    }
+    return 0;
+}
+
+int checkCollisionLeft(Sprite col_object, Sprite my_object){
+    if(col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
+        return 1;
+    }
+    return 0;
+}
+
+int checkCollisionTop(Sprite col_object, Sprite my_object){
+    if(col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
+        return 1;
+    }
+    return 0;
+}
+
+int checkCollisionBottom(Sprite col_object, Sprite my_object){
+    if(col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
+        return 1;
+    }
+    return 0;
+}
+
+
 //Check collisions between rectangles only
 //Bounding boxes collision
 //Best Method
 int checkCollision(string name, float dx, float dy){
     int any_collide=0;
+    if(name=="vishrectangle"){ 
+        for(map<string,Sprite>::iterator it2=coins.begin();it2!=coins.end();it2++){
+            Sprite col_object=coins[it2->first];
+            Sprite my_object=objects["vishrectangle"];
+            if(col_object.status==0)
+                continue;
+            if(dx>0 && checkCollisionRight(col_object,my_object)){
+                coins[it2->first].status=0;
+                cout <<" COIN " << endl;
+            }
+            if(dx<0 && checkCollisionLeft(col_object,my_object)){
+                coins[it2->first].status=0;
+                cout <<" COIN " << endl;
+            }
+            if(dy>0 && checkCollisionTop(col_object,my_object)){
+                coins[it2->first].status=0;
+                cout <<" COIN " << endl; 
+            }
+            if(dy<0 && checkCollisionBottom(col_object,my_object)){
+                coins[it2->first].status=0;
+                cout <<" COIN " << endl; 
+            }
+        }
+    }
+    
     for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
         int collide=0;
         string colliding = it2->first;
@@ -537,7 +594,7 @@ int checkCollision(string name, float dx, float dy){
             healthreduct=1;
         }
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
-            if(dx>0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
+            if(dx>0 && checkCollisionRight(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
                     col_object.x_speed=my_object.x_speed/2;
@@ -552,7 +609,7 @@ int checkCollision(string name, float dx, float dy){
                 my_object.x_speed/=(1+col_object.friction);
                 my_object.x=col_object.x-col_object.width/2-my_object.width/2;
             }
-            else if(dx<0 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
+            else if(dx<0 && checkCollisionLeft(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
                     col_object.x_speed=my_object.x_speed/2;
@@ -567,7 +624,7 @@ int checkCollision(string name, float dx, float dy){
                 my_object.x_speed/=(1+col_object.friction);
                 my_object.x=col_object.x+col_object.width/2+my_object.width/2;
             }
-            if(dy>0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
+            if(dy>0 && checkCollisionTop(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
                     col_object.y_speed=my_object.y_speed/2;
@@ -582,7 +639,7 @@ int checkCollision(string name, float dx, float dy){
                 my_object.y_speed/=2;
                 my_object.y=col_object.y-col_object.height/2-my_object.height/2;
             }
-            else if(dy<0 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
+            else if(dy<0 && checkCollisionBottom(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
                     col_object.y_speed=my_object.y_speed/2;
@@ -623,6 +680,7 @@ int checkCollision(string name, float dx, float dy){
 //This won't work for the walls of our box so we won't use this
 //This is not accurate or efficient but is useful when we have rotated objects since standard collision checks dont work well for rotated objects
 //Call this function either with dx or dy only not both!
+//Not updated (Dont use directly)
 int checkCollisionSphere(string name,float dx, float dy){
     int collide=0;
     for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
@@ -753,6 +811,39 @@ void draw (GLFWwindow* window)
 
         // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(cannonObjects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
+    //Draw the coins
+    for(map<string,Sprite>::iterator it=coins.begin();it!=coins.end();it++){
+        string current = it->first; //The name of the current object
+        if(coins[current].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;	// MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(coins[current].x, coins[current].y, 0.0f)); // glTranslatef
+        glm::mat4 rotateTriangle = glm::rotate((float)((coins[current].angle)*M_PI/180.0f), glm::vec3(0,1,0));  // rotate about vector (1,0,0)
+        coins[current].angle=(coins[current].angle+1.0);
+        if(coins[current].angle>=360.0)
+            coins[current].angle=0.0;
+        triangleTransform=translateTriangle*rotateTriangle;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(coins[current].object);
         // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
@@ -925,6 +1016,9 @@ void initGL (GLFWwindow* window, int width, int height)
     cannonObjects["cannonaim"].status=0;
     createRectangle("cannonrectangle",vishcolor,280,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=-45;
+
+    createCircle("coin1",vishcolor,320,-40,15,12,"coin",1);
+    createCircle("coin2",vishcolor,20,-40,15,12,"coin",1);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
