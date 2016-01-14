@@ -63,6 +63,7 @@ map <string, Sprite> objects;
 map <string, Sprite> cannonObjects; //Only store cannon components here
 map <string, Sprite> coins;
 map <string, Sprite> backgroundObjects;
+map <string, Sprite> goalObjects;
 
 float gravity = 1;
 float airResistance = 0.2;
@@ -414,6 +415,8 @@ void createTriangle (string name, COLOR color, float x[], float y[], string comp
         cannonObjects[name]=vishsprite;
     else if(component=="background")
         backgroundObjects[name]=vishsprite;
+    else if(component=="goal")
+        goalObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -465,6 +468,8 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
         cannonObjects[name]=vishsprite;
     else if(component=="background")
         backgroundObjects[name]=vishsprite;
+    else if(component=="goal")
+        goalObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -522,6 +527,8 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
         coins[name]=vishsprite;
     else if(component=="background")
         backgroundObjects[name]=vishsprite;
+    else if(component=="goal")
+        goalObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -585,6 +592,28 @@ int checkCollision(string name, float dx, float dy){
             if(dy<0 && checkCollisionBottom(col_object,my_object)){
                 coins[it2->first].status=0;
                 cout <<" COIN " << endl; 
+            }
+        }
+        for(map<string,Sprite>::iterator it2=goalObjects.begin();it2!=goalObjects.end();it2++){
+            Sprite col_object=goalObjects[it2->first];
+            Sprite my_object=objects["vishrectangle"];
+            if(col_object.status==0)
+                continue;
+            if(dx>0 && checkCollisionRight(col_object,my_object)){
+                goalObjects[it2->first].status=0;
+                cout <<" GOAL OBTAINED " << endl;
+            }
+            if(dx<0 && checkCollisionLeft(col_object,my_object)){
+                goalObjects[it2->first].status=0;
+                cout <<" GOAL OBTAINED " << endl;
+            }
+            if(dy>0 && checkCollisionTop(col_object,my_object)){
+                goalObjects[it2->first].status=0;
+                cout <<" GOAL OBTAINED " << endl; 
+            }
+            if(dy<0 && checkCollisionBottom(col_object,my_object)){
+                goalObjects[it2->first].status=0;
+                cout <<" GOAL OBTAINED " << endl; 
             }
         }
     }
@@ -787,6 +816,7 @@ void draw (GLFWwindow* window)
     //  Don't change unless you are sure!!
     glm::mat4 VP = Matrices.projection * Matrices.view;
 
+    //Draw the background
     for(map<string,Sprite>::iterator it=backgroundObjects.begin();it!=backgroundObjects.end();it++){
         string current = it->first; //The name of the current object
         if(backgroundObjects[current].status==0)
@@ -831,7 +861,7 @@ void draw (GLFWwindow* window)
         /* Render your scene */
         glm::mat4 triangleTransform;
         glm::mat4 translateTriangle = glm::translate (glm::vec3(coins[current].x, coins[current].y, 0.0f)); // glTranslatef
-        glm::mat4 rotateTriangle = glm::rotate((float)((coins[current].angle)*M_PI/180.0f), glm::vec3(0,1,0));  // rotate about vector (1,0,0)
+        glm::mat4 rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,1,0));  // rotate about vector (1,0,0)
         coins[current].angle=(coins[current].angle+1.0);
         if(coins[current].angle>=360.0)
             coins[current].angle=0.0;
@@ -844,6 +874,35 @@ void draw (GLFWwindow* window)
 
         // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(coins[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
+    //Draw the goals
+    for(map<string,Sprite>::iterator it=goalObjects.begin();it!=goalObjects.end();it++){
+        string current = it->first; //The name of the current object
+        if(goalObjects[current].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(goalObjects[current].x, goalObjects[current].y, 0.0f)); // glTranslatef
+        triangleTransform=translateTriangle;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(goalObjects[current].object);
         // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
@@ -1068,7 +1127,7 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannonaim",lightgreen,320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",darkbrown,320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
     createRectangle("cannonrectangle",darkbrown,250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=-45;
@@ -1079,6 +1138,8 @@ void initGL (GLFWwindow* window, int width, int height)
 
     createCircle("coin1",gold,320,-40,15,12,"coin",1);
     createCircle("coin2",gold,20,-40,15,12,"coin",1);
+
+    createCircle("goal1",darkgreen,130,-40,15,15,"goal",1);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
