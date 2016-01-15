@@ -248,6 +248,7 @@ void draw3DObject (struct VAO* vao)
  * Customizable functions *
  **************************/
 
+int player_status=0; //0 is ready to play, 1 is not ready yet
 float triangle_rot_dir = 1;
 float rectangle_rot_dir = 1;
 bool triangle_rot_status = true;
@@ -270,6 +271,11 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
             case GLFW_KEY_X:
                 // do something ..
                 break;
+            case GLFW_KEY_R:
+                objects["vishrectangle"].y=-270;
+                objects["vishrectangle"].x=-320;
+                objects["vishrectangle"].inAir=0;
+                player_status=0;
             default:
                 break;
         }
@@ -298,7 +304,6 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
     }
 }
 
-int player_status=0; //0 is ready to play, 1 is not ready yet
 int mouse_clicked=0;
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
@@ -818,7 +823,7 @@ void draw (GLFWwindow* window)
         player_reset_timer-=1;
         if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
             player_status=0;
-            objects["vishrectangle"].y=-290;
+            objects["vishrectangle"].y=-270;
             objects["vishrectangle"].x=-320;
         }
     }
@@ -1142,7 +1147,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cloud2a",0,cloudwhite,190,160,100,200,"background");
     createRectangle("cloud2b",0,cloudwhite1,190,155,40,250,"background");
     
-    createCircle("vishrectangle",2,black,-320,-290,15,10,"",1); //Generate sprites
+    createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
     createRectangle("vishrectangle3",1,cratebrown1,200,60,30,30,"");
