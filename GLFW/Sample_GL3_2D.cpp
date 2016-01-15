@@ -49,6 +49,9 @@ struct Sprite {
     int isRotating;
     int direction; //0 for clockwise and 1 for anticlockwise for animation
     float remAngle; //the remaining angle to finish animation
+    int isMovingAnim;
+    int dx;
+    int dy;
     float weight;
 };
 typedef struct Sprite Sprite;
@@ -275,6 +278,19 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 objects["vishrectangle"].y=-270;
                 objects["vishrectangle"].x=-320;
                 objects["vishrectangle"].inAir=0;
+                for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+                    string current = it->first; //The name of the current object
+                    if(cannonObjects[current].isMovingAnim==1){
+                        cannonObjects[current].x+=16-cannonObjects[current].dx;
+                        cannonObjects[current].isMovingAnim=0;
+                        cannonObjects[current].dx=0;
+                    }
+                    if(cannonObjects[current].isMovingAnim==2){
+                        cannonObjects[current].x+=cannonObjects[current].dx;
+                        cannonObjects[current].isMovingAnim=0;
+                        cannonObjects[current].dx=0;
+                    }
+                }
                 player_status=0;
             default:
                 break;
@@ -332,6 +348,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                         //Also adjust the sensitivity of the mouse drag as required
                         objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
                         objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
+                        for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+                            string current = it->first; //The name of the current object
+                            cannonObjects[current].dx=16;
+                            cannonObjects[current].isMovingAnim=1;
+                        }
                     }
                 }
                 triangle_rot_dir *= -1;
@@ -1010,6 +1031,21 @@ void draw (GLFWwindow* window)
     //Draw the cannon
     for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
         string current = it->first; //The name of the current object
+        if(cannonObjects[current].isMovingAnim==1){
+            cannonObjects[current].x-=4;
+            cannonObjects[current].dx-=4;
+            if(cannonObjects[current].dx==0){
+                cannonObjects[current].isMovingAnim=2;
+                cannonObjects[current].dx=16;
+            }
+        }
+        if(cannonObjects[current].isMovingAnim==2){
+            cannonObjects[current].x+=1;
+            cannonObjects[current].dx-=1;
+            if(cannonObjects[current].dx==0){
+                cannonObjects[current].isMovingAnim=0;
+            }
+        }
         if(cannonObjects[current].status==0)
             continue;
         // Send our transformation to the currently bound shader, in the "MVP" uniform
