@@ -1127,14 +1127,21 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR skyblue2 = {113/255.0,185/255.0,209/255.0};
     COLOR skyblue1 = {123/255.0,201/255.0,227/255.0};
     COLOR skyblue = {132/255.0,217/255.0,245/255.0};
+    COLOR cloudwhite = {229/255.0,255/255.0,255/255.0};
+    COLOR cloudwhite1 = {204/255.0,255/255.0,255/255.0};
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("sky1",0,skyblue,0,0,600,800,"background");
-    createRectangle("sky2",0,skyblue1,0,-200,600,800,"background");
-    createRectangle("sky3",0,skyblue2,0,-400,600,800,"background");
+    createRectangle("asky1",0,skyblue,0,0,600,800,"background");
+    createRectangle("asky2",0,skyblue1,0,-200,600,800,"background");
+    createRectangle("asky3",0,skyblue2,0,-400,600,800,"background");
 
+    createRectangle("cloud1a",0,cloudwhite,-190,110,100,200,"background");
+    createRectangle("cloud1b",0,cloudwhite1,-180,110,40,260,"background");
+    createRectangle("cloud2a",0,cloudwhite,190,160,100,200,"background");
+    createRectangle("cloud2b",0,cloudwhite1,190,155,40,250,"background");
+    
     createCircle("vishrectangle",2,black,-320,-290,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
