@@ -625,9 +625,19 @@ int checkCollision(string name, float dx, float dy){
         if(col_object.status==0)
             continue;
         Sprite my_object = objects[name];
-        float coef1=2*my_object.weight/(my_object.weight+col_object.weight);
-        float coef2=2*col_object.weight/(my_object.weight+col_object.weight);
-        float coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
+        float coef1; //'2*m1/(m1+m2)'
+        float coef2; //'2*m2/(m1+m2)'
+        float coef3; //'(m1-m2)/(m1+m2)'
+        if(my_object.weight+col_object.weight==0){
+            coef1=0;
+            coef2=0;
+            coef3=0;
+        }
+        else{
+            coef1=2*my_object.weight/(my_object.weight+col_object.weight);
+            coef2=2*col_object.weight/(my_object.weight+col_object.weight);
+            coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
+        }
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if(dx>0 && checkCollisionRight(col_object,my_object)){
                 collide=1;
