@@ -684,9 +684,9 @@ int checkCollision(string name, float dx, float dy){
             if(dy>0 && checkCollisionTop(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    //col_object.y_speed=my_object.y_speed/2;
+                    col_object.y_speed=my_object.y_speed/2;
                     //For object colliding with us set its speed using elastic collision
-                    col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
+                    //col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
                         col_object.isRotating=1;
@@ -701,9 +701,9 @@ int checkCollision(string name, float dx, float dy){
             else if(dy<0 && checkCollisionBottom(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    //col_object.y_speed=my_object.y_speed/2;
+                    col_object.y_speed=my_object.y_speed/2;
                     //For object colliding with us set its speed using elastic collision
-                    col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
+                    //col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
                         col_object.isRotating=1;
