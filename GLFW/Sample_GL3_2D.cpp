@@ -632,12 +632,13 @@ int checkCollision(string name, float dx, float dy){
         float coef1=2*my_object.weight/(my_object.weight+col_object.weight);
         float coef2=2*col_object.weight/(my_object.weight+col_object.weight);
         float coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
-        cout << coef1 << " " << coef2 << " " << coef3 << endl;
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if(dx>0 && checkCollisionRight(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    col_object.x_speed=my_object.x_speed/2;
+                    //col_object.x_speed=my_object.x_speed/2;
+                    col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
+                    col_object.x_speed/=(1+my_object.friction);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
                         col_object.isRotating=1;
@@ -652,7 +653,9 @@ int checkCollision(string name, float dx, float dy){
             else if(dx<0 && checkCollisionLeft(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    col_object.x_speed=my_object.x_speed/2;
+                    //col_object.x_speed=my_object.x_speed/2;
+                    col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
+                    col_object.x_speed/=(1+my_object.friction);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
                         col_object.isRotating=1;
@@ -667,7 +670,8 @@ int checkCollision(string name, float dx, float dy){
             if(dy>0 && checkCollisionTop(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    col_object.y_speed=my_object.y_speed/2;
+                    //col_object.y_speed=my_object.y_speed/2;
+                    col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
                         col_object.isRotating=1;
@@ -682,7 +686,8 @@ int checkCollision(string name, float dx, float dy){
             else if(dy<0 && checkCollisionBottom(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
-                    col_object.y_speed=my_object.y_speed/2;
+                    //col_object.y_speed=my_object.y_speed/2;
+                    col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
                         col_object.isRotating=1;
@@ -697,9 +702,10 @@ int checkCollision(string name, float dx, float dy){
                     if(name=="vishrectangle" && player_reset_timer==0 && player_status==1)
                         player_reset_timer=30;
                 }
+                my_object.y=col_object.y+col_object.height/2+my_object.height/2;
                 my_object.y_speed*=-1;
                 my_object.y_speed/=2;
-                my_object.y=col_object.y+col_object.height/2+my_object.height/2;
+                //my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed);
             }
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0){
@@ -1115,10 +1121,11 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("sky3",0,skyblue2,0,-400,600,800,"background");
 
     createCircle("vishrectangle",2,black,-320,-290,15,10,"",1); //Generate sprites
-    createRectangle("vishrectangle2",1,cratebrown,-200,30,30,30,"");
-    createRectangle("vishrectangle3",1,cratebrown1,-200,60,30,30,"");
-    createRectangle("vishrectangle4",1,cratebrown2,-200,90,30,30,"");
-    createRectangle("vishrectangle5",1,cratebrown,-200,120,30,30,"");
+    objects["vishrectangle"].friction=0.5;
+    createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
+    createRectangle("vishrectangle3",1,cratebrown1,200,60,30,30,"");
+    createRectangle("vishrectangle4",1,cratebrown2,200,90,30,30,"");
+    createRectangle("vishrectangle5",1,cratebrown,200,120,30,30,"");
     createRectangle("floor",0,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
