@@ -49,6 +49,7 @@ struct Sprite {
     int isRotating;
     int direction; //0 for clockwise and 1 for anticlockwise for animation
     float remAngle; //the remaining angle to finish animation
+    float weight;
 };
 typedef struct Sprite Sprite;
 
@@ -370,7 +371,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 
 
 // Creates the triangle object used in this sample code
-void createTriangle (string name, COLOR color, float x[], float y[], string component)
+void createTriangle (string name, float weight, COLOR color, float x[], float y[], string component)
 {
     /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
@@ -407,6 +408,7 @@ void createTriangle (string name, COLOR color, float x[], float y[], string comp
     vishsprite.fixed=0;
     vishsprite.friction=0.2;
     vishsprite.health=100;
+    vishsprite.weight=weight;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
     else if(component=="background")
@@ -418,7 +420,7 @@ void createTriangle (string name, COLOR color, float x[], float y[], string comp
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (string name, COLOR color, float x, float y, float height, float width, string component)
+void createRectangle (string name, float weight, COLOR color, float x, float y, float height, float width, string component)
 {
     // GL3 accepts only Triangles. Quads are not supported
     float w=width/2,h=height/2;
@@ -460,6 +462,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
     vishsprite.radius=(sqrt(height*height+width*width))/2;
     vishsprite.friction=0.2;
     vishsprite.health=100;
+    vishsprite.weight=weight;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
     else if(component=="background")
@@ -470,7 +473,7 @@ void createRectangle (string name, COLOR color, float x, float y, float height, 
         objects[name]=vishsprite;
 }
 
-void createCircle (string name, COLOR color, float x, float y, float r, int NoOfParts, string component, int fill)
+void createCircle (string name, float weight, COLOR color, float x, float y, float r, int NoOfParts, string component, int fill)
 {
     int parts = NoOfParts;
     float radius = r;
@@ -517,6 +520,7 @@ void createCircle (string name, COLOR color, float x, float y, float r, int NoOf
     vishsprite.fixed=0;
     vishsprite.friction=0.2;
     vishsprite.health=100;
+    vishsprite.weight=weight;
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
     else if(component=="coin")
@@ -625,6 +629,10 @@ int checkCollision(string name, float dx, float dy){
         if(name=="vishrectangle"){
             healthreduct=1;
         }
+        float coef1=2*my_object.weight/(my_object.weight+col_object.weight);
+        float coef2=2*col_object.weight/(my_object.weight+col_object.weight);
+        float coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
+        cout << coef1 << " " << coef2 << " " << coef3 << endl;
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if(dx>0 && checkCollisionRight(col_object,my_object)){
                 collide=1;
@@ -1102,44 +1110,44 @@ void initGL (GLFWwindow* window, int width, int height)
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("sky1",skyblue,0,0,600,800,"background");
-    createRectangle("sky2",skyblue1,0,-200,600,800,"background");
-    createRectangle("sky3",skyblue2,0,-400,600,800,"background");
+    createRectangle("sky1",0,skyblue,0,0,600,800,"background");
+    createRectangle("sky2",0,skyblue1,0,-200,600,800,"background");
+    createRectangle("sky3",0,skyblue2,0,-400,600,800,"background");
 
-    createCircle("vishrectangle",black,-320,-290,15,10,"",1); //Generate sprites
-    createRectangle("vishrectangle2",cratebrown,-200,30,30,30,"");
-    createRectangle("vishrectangle3",cratebrown1,-200,60,30,30,"");
-    createRectangle("vishrectangle4",cratebrown2,-200,90,30,30,"");
-    createRectangle("vishrectangle5",cratebrown,-200,120,30,30,"");
-    createRectangle("floor",lightgreen,0,-300,60,800,"");
+    createCircle("vishrectangle",2,black,-320,-290,15,10,"",1); //Generate sprites
+    createRectangle("vishrectangle2",1,cratebrown,-200,30,30,30,"");
+    createRectangle("vishrectangle3",1,cratebrown1,-200,60,30,30,"");
+    createRectangle("vishrectangle4",1,cratebrown2,-200,90,30,30,"");
+    createRectangle("vishrectangle5",1,cratebrown,-200,120,30,30,"");
+    createRectangle("floor",0,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("floor2",darkgreen,0,-300,35,800,"");
+    createRectangle("floor2",0,darkgreen,0,-300,35,800,"");
     objects["floor2"].fixed=1;
     objects["floor2"].friction=0.5;
-    createRectangle("roof",grey,0,300,60,800,"");
+    createRectangle("roof",0,grey,0,300,60,800,"");
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",grey,-400,0,600,60,"");
+    createRectangle("wall1",0,grey,-400,0,600,60,"");
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",grey,400,0,600,60,"");
+    createRectangle("wall2",0,grey,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannonaim",darkbrown,-320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",0,darkbrown,-320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",darkbrown,-250,-240,40,80,"cannon");
+    createRectangle("cannonrectangle",0,darkbrown,-250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
-    createCircle("cannoncircle",darkbrown,-320,-240,45,10,"cannon",1); 
+    createCircle("cannoncircle",0,darkbrown,-320,-240,45,10,"cannon",1); 
     //The objects are drawn in the lexicographic ordering of their names
-    createCircle("cannoncircle2",lightbrown,-320,-240,35,10,"cannon",1);
+    createCircle("cannoncircle2",0,lightbrown,-320,-240,35,10,"cannon",1);
 
-    createCircle("coin1",gold,320,-40,15,12,"coin",1);
-    createCircle("coin2",gold,20,-40,15,12,"coin",1);
+    createCircle("coin1",0,gold,320,-40,15,12,"coin",1);
+    createCircle("coin2",0,gold,20,-40,15,12,"coin",1);
 
-    createCircle("goal1",darkgreen,130,-40,15,15,"goal",1);
+    createCircle("goal1",0,darkgreen,130,-40,15,15,"goal",1);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
