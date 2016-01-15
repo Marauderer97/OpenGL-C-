@@ -764,10 +764,14 @@ int checkCollisionSphere(string name,float dx, float dy){
 }
 
 
+float old_time; // Time in seconds
+float cur_time; // Time in seconds
+
 /* Render the scene with openGL */
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
+    float time_delta = (cur_time-old_time)*60;
     if (mouse_clicked==1) {
         float angle=0;
         double mouse_x_cur;
@@ -858,7 +862,7 @@ void draw (GLFWwindow* window)
         glm::mat4 triangleTransform;
         glm::mat4 translateTriangle = glm::translate (glm::vec3(coins[current].x, coins[current].y, 0.0f)); // glTranslatef
         glm::mat4 rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,1,0));  // rotate about vector (1,0,0)
-        coins[current].angle=(coins[current].angle+1.0);
+        coins[current].angle=(coins[current].angle+1.0*time_delta);
         if(coins[current].angle>=360.0)
             coins[current].angle=0.0;
         triangleTransform=translateTriangle*rotateTriangle;
@@ -914,17 +918,17 @@ void draw (GLFWwindow* window)
         }
         if(objects[current].inAir && objects[current].fixed==0){
             if(objects[current].y_speed>=-30)
-                objects[current].y_speed-=gravity;
+                objects[current].y_speed-=gravity*time_delta;
             if(objects[current].x_speed>0)
-                objects[current].x_speed-=airResistance;
+                objects[current].x_speed-=airResistance*time_delta;
             else if(objects[current].x_speed<0)
-                objects[current].x_speed+=airResistance;
-            pair<float,float> position = moveObject(current,objects[current].x_speed,0);
+                objects[current].x_speed+=airResistance*time_delta;
+            pair<float,float> position = moveObject(current,objects[current].x_speed*time_delta,0);
             //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
-            checkCollision(current,objects[current].x_speed,0); //Always call the checkCollision function with only 1 position change at a time!
-            position = moveObject(current,0,objects[current].y_speed);
+            checkCollision(current,objects[current].x_speed*time_delta,0); //Always call the checkCollision function with only 1 position change at a time!
+            position = moveObject(current,0,objects[current].y_speed*time_delta);
             //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
-            checkCollision(current,0,objects[current].y_speed);
+            checkCollision(current,0,objects[current].y_speed*time_delta);
         }
         // Send our transformation to the currently bound shader, in the "MVP" uniform
         // For each model you render, since the MVP will be different (at least the M part)
@@ -1168,12 +1172,15 @@ int main (int argc, char** argv)
     initGL (window, width, height);
 
     double last_update_time = glfwGetTime(), current_time;
-
+    
+    old_time = glfwGetTime();
     /* Draw in loop */
     while (!glfwWindowShouldClose(window)) {
 
+        cur_time = glfwGetTime(); // Time in seconds
         // OpenGL Draw commands
         draw(window);
+        old_time=cur_time;
 
         // Swap Frame Buffer in double buffering
         glfwSwapBuffers(window);
