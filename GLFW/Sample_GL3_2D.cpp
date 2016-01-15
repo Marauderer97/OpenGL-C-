@@ -310,7 +310,6 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             if (action == GLFW_PRESS) {
                 mouse_clicked=1;
                 cannonObjects["cannonaim"].status=1;
-                glfwGetCursorPos(window,&mouse_x_old,&mouse_y_old);
             }
             if (action == GLFW_RELEASE) {
                 mouse_clicked=0;
@@ -320,16 +319,13 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                     glfwGetCursorPos(window,&mouse_x,&mouse_y);
                     if(objects["vishrectangle"].inAir == 0){
                         objects["vishrectangle"].inAir = 1;
+                        float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
+                        objects["vishrectangle"].x = -320+cos(angle)*cannonObjects["cannonrectangle"].width;
+                        objects["vishrectangle"].y = -240+sin(angle)*cannonObjects["cannonrectangle"].width;
                         //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
                         //Also adjust the sensitivity of the mouse drag as required
-                        if(mouse_y_old-mouse_y==0)
-                            objects["vishrectangle"].y_speed=0;
-                        else
-                            objects["vishrectangle"].y_speed = min((545-mouse_y)/15,30.0);
-                        if(mouse_x_old-mouse_x==0)
-                            objects["vishrectangle"].x_speed=0;
-                        else
-                            objects["vishrectangle"].x_speed = max(-(720-mouse_x)/15,-30.0);
+                        objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
+                        objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
                     }
                 }
                 triangle_rot_dir *= -1;
@@ -780,17 +776,17 @@ void draw (GLFWwindow* window)
         if(mouse_x_cur==800)
             angle=90;
         else{
-            angle=atan(abs(mouse_y_cur-600)/abs(mouse_x_cur-800)); 
+            angle=atan(abs(mouse_y_cur-600)/abs(mouse_x_cur)); 
             angle*=180/M_PI;
         }
-        cannonObjects["cannonrectangle"].angle=-angle;
+        cannonObjects["cannonrectangle"].angle=angle;
     }
     if(player_reset_timer>0){
         player_reset_timer-=1;
         if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
             player_status=0;
             objects["vishrectangle"].y=-290;
-            objects["vishrectangle"].x=320;
+            objects["vishrectangle"].x=-320;
         }
     }
     // clear the color and depth in the frame buffer
@@ -992,9 +988,9 @@ void draw (GLFWwindow* window)
         float x_diff,y_diff;
         x_diff=abs(cannonObjects["cannoncircle"].x-cannonObjects[current].x);
         y_diff=abs(cannonObjects["cannoncircle"].y-cannonObjects[current].y);
-        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(x_diff, -y_diff, 0.0f)); // glTranslatef
+        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f)); // glTranslatef
         glm::mat4 rotateTriangle = glm::rotate((float)((cannonObjects[current].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(-x_diff, y_diff, 0.0f)); // glTranslatef
+        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f)); // glTranslatef
         triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
         Matrices.model *= triangleTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
@@ -1106,7 +1102,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("sky2",skyblue1,0,-200,600,800,"background");
     createRectangle("sky3",skyblue2,0,-400,600,800,"background");
 
-    createCircle("vishrectangle",black,320,-290,15,10,"",1); //Generate sprites
+    createCircle("vishrectangle",black,-320,-290,15,10,"",1); //Generate sprites
     createRectangle("vishrectangle2",cratebrown,-200,30,30,30,"");
     createRectangle("vishrectangle3",cratebrown1,-200,60,30,30,"");
     createRectangle("vishrectangle4",cratebrown2,-200,90,30,30,"");
@@ -1127,14 +1123,14 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
     
-    createCircle("cannonaim",darkbrown,320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",darkbrown,-320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",darkbrown,250,-240,40,80,"cannon");
-    cannonObjects["cannonrectangle"].angle=-45;
+    createRectangle("cannonrectangle",darkbrown,-250,-240,40,80,"cannon");
+    cannonObjects["cannonrectangle"].angle=45;
 
-    createCircle("cannoncircle",darkbrown,320,-240,45,10,"cannon",1); 
+    createCircle("cannoncircle",darkbrown,-320,-240,45,10,"cannon",1); 
     //The objects are drawn in the lexicographic ordering of their names
-    createCircle("cannoncircle2",lightbrown,320,-240,35,10,"cannon",1);
+    createCircle("cannoncircle2",lightbrown,-320,-240,35,10,"cannon",1);
 
     createCircle("coin1",gold,320,-40,15,12,"coin",1);
     createCircle("coin2",gold,20,-40,15,12,"coin",1);
