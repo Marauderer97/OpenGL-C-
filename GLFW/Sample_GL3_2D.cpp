@@ -406,7 +406,7 @@ void createTriangle (string name, float weight, COLOR color, float x[], float y[
     vishsprite.y_speed=0;
     vishsprite.radius=-1; //The bounding circle radius is not defined.
     vishsprite.fixed=0;
-    vishsprite.friction=0.2;
+    vishsprite.friction=0.4;
     vishsprite.health=100;
     vishsprite.weight=weight;
     if(component=="cannon")
@@ -460,7 +460,7 @@ void createRectangle (string name, float weight, COLOR color, float x, float y, 
     vishsprite.y_speed=0;
     vishsprite.fixed=0;
     vishsprite.radius=(sqrt(height*height+width*width))/2;
-    vishsprite.friction=0.2;
+    vishsprite.friction=0.4;
     vishsprite.health=100;
     vishsprite.weight=weight;
     if(component=="cannon")
@@ -518,7 +518,7 @@ void createCircle (string name, float weight, COLOR color, float x, float y, flo
     vishsprite.y_speed=0;
     vishsprite.radius=r;
     vishsprite.fixed=0;
-    vishsprite.friction=0.2;
+    vishsprite.friction=0.4;
     vishsprite.health=100;
     vishsprite.weight=weight;
     if(component=="cannon")
@@ -1162,9 +1162,9 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cannonrectangle",0,darkbrown,-250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
-    createCircle("cannoncircle",0,darkbrown,-320,-240,45,10,"cannon",1); 
+    createCircle("cannoncircle",0,darkbrown,-320,-240,45,12,"cannon",1); 
     //The objects are drawn in the lexicographic ordering of their names
-    createCircle("cannoncircle2",0,lightbrown,-320,-240,35,10,"cannon",1);
+    createCircle("cannoncircle2",0,lightbrown,-320,-240,35,12,"cannon",1);
 
     createCircle("coin1",0,gold,320,-40,15,12,"coin",1);
     createCircle("coin2",0,gold,20,-40,15,12,"coin",1);
