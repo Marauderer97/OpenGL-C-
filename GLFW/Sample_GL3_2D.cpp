@@ -625,10 +625,6 @@ int checkCollision(string name, float dx, float dy){
         if(col_object.status==0)
             continue;
         Sprite my_object = objects[name];
-        int healthreduct=0;
-        if(name=="vishrectangle"){
-            healthreduct=1;
-        }
         float coef1=2*my_object.weight/(my_object.weight+col_object.weight);
         float coef2=2*col_object.weight/(my_object.weight+col_object.weight);
         float coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
@@ -637,6 +633,7 @@ int checkCollision(string name, float dx, float dy){
                 collide=1;
                 if(col_object.fixed==0){
                     //col_object.x_speed=my_object.x_speed/2;
+                    //For object colliding with us set its speed using elastic collision
                     col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
                     col_object.x_speed/=(1+my_object.friction);
                     col_object.inAir=1;
@@ -646,7 +643,10 @@ int checkCollision(string name, float dx, float dy){
                         col_object.remAngle=90;
                     }
                 }
-                my_object.x_speed*=-1;
+                if(col_object.fixed==1)
+                    my_object.x_speed*=-1;
+                else
+                    my_object.x_speed=-(coef3*my_object.x_speed-coef2*col_object.x_speed); //Use elastic collision
                 my_object.x_speed/=(1+col_object.friction);
                 my_object.x=col_object.x-col_object.width/2-my_object.width/2;
             }
@@ -654,6 +654,7 @@ int checkCollision(string name, float dx, float dy){
                 collide=1;
                 if(col_object.fixed==0){
                     //col_object.x_speed=my_object.x_speed/2;
+                    //For object colliding with us set its speed using elastic collision
                     col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
                     col_object.x_speed/=(1+my_object.friction);
                     col_object.inAir=1;
@@ -663,7 +664,10 @@ int checkCollision(string name, float dx, float dy){
                         col_object.remAngle=90;
                     }
                 }
-                my_object.x_speed*=-1;
+                if(col_object.fixed==1)
+                    my_object.x_speed*=-1;
+                else
+                    my_object.x_speed=-(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
                 my_object.x_speed/=(1+col_object.friction);
                 my_object.x=col_object.x+col_object.width/2+my_object.width/2;
             }
@@ -671,6 +675,7 @@ int checkCollision(string name, float dx, float dy){
                 collide=1;
                 if(col_object.fixed==0){
                     //col_object.y_speed=my_object.y_speed/2;
+                    //For object colliding with us set its speed using elastic collision
                     col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
@@ -679,14 +684,15 @@ int checkCollision(string name, float dx, float dy){
                         col_object.remAngle=90;
                     }
                 }
-                my_object.y_speed*=-1;
-                my_object.y_speed/=2;
                 my_object.y=col_object.y-col_object.height/2-my_object.height/2;
+                my_object.y_speed*=-1;
+                my_object.y_speed/=2; //Don't use actual collision on y axis for colliding object
             }
             else if(dy<0 && checkCollisionBottom(col_object,my_object)){
                 collide=1;
                 if(col_object.fixed==0){
                     //col_object.y_speed=my_object.y_speed/2;
+                    //For object colliding with us set its speed using elastic collision
                     col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
@@ -704,8 +710,7 @@ int checkCollision(string name, float dx, float dy){
                 }
                 my_object.y=col_object.y+col_object.height/2+my_object.height/2;
                 my_object.y_speed*=-1;
-                my_object.y_speed/=2;
-                //my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed);
+                my_object.y_speed/=2; //Don't use actual collision on y axis for colliding object
             }
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0){
