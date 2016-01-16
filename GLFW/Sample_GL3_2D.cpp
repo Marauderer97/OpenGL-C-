@@ -323,6 +323,7 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 int mouse_clicked=0;
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
+double click_time=0;
 
 /* Executed when a mouse button is pressed/released */
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
@@ -346,6 +347,7 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
                         objects["vishrectangle"].y = -240+sin(angle)*cannonObjects["cannonrectangle"].width;
                         //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
                         //Also adjust the sensitivity of the mouse drag as required
+                        click_time=glfwGetTime();
                         objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
                         objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
                         for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
@@ -708,8 +710,8 @@ int checkCollision(string name, float dx, float dy){
                 else if(dy<=0 && checkCollisionBottom(col_object,my_object)){
                     my_object.y=col_object.y+col_object.height/2+my_object.height/2;
                 }
-                if(dy<0){
-                    if(abs(objects[name].y_speed)<=7.5 || abs(objects[name].y_speed)<=7.5){ 
+                if(dy!=0){
+                    if(abs(objects[name].y_speed)<=7.5){ 
                         my_object.y_speed=0;
                         my_object.x_speed=0;
                         my_object.inAir=0;
@@ -802,6 +804,26 @@ float cur_time; // Time in seconds
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
+    if(glfwGetTime()-click_time>=1.5){
+        objects["vishrectangle"].y=-270;
+        objects["vishrectangle"].x=-320;
+        objects["vishrectangle"].inAir=0;
+        for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+            string current = it->first; //The name of the current object
+            if(cannonObjects[current].isMovingAnim==1){
+                cannonObjects[current].x+=16-cannonObjects[current].dx;
+                cannonObjects[current].isMovingAnim=0;
+                cannonObjects[current].dx=0;
+            }
+            if(cannonObjects[current].isMovingAnim==2){
+                cannonObjects[current].x+=cannonObjects[current].dx;
+                cannonObjects[current].isMovingAnim=0;
+                cannonObjects[current].dx=0;
+            }
+        }
+        player_status=0;
+    }
+
     float time_delta = (cur_time-old_time)*60;
     if (mouse_clicked==1) {
         float angle=0;
@@ -981,13 +1003,15 @@ void draw (GLFWwindow* window)
         if (objects[current].isRotating==1 && current!="vishrectangle"){
             objects[current].remAngle-=7;
             float rotationAngle = 90-objects[current].remAngle;
-            float xShift = -1.3;
+            float xShift = -1.1;
             if(objects[current].direction==0){
                 rotationAngle*=-1;
                 xShift*=-1;
             }
             moveObject(current,xShift,0);
-            checkCollision(current,xShift,0);
+            if(checkCollision(current,xShift,0)){
+                moveObject(current,-xShift,0);
+            }
             glm::mat4 rotateTriangle = glm::rotate((float)((rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
             if(objects[current].remAngle<=0){
                 rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
