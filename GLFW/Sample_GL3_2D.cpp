@@ -643,14 +643,14 @@ int checkCollision(string name, float dx, float dy){
             }
         }
     }
-    
+
     for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
         int collide=0;
         string colliding = it2->first;
         Sprite col_object = it2->second;
-        if(col_object.status==0)
-            continue;
         Sprite my_object = objects[name];
+        if(col_object.status==0 || my_object.fixed==1)
+            continue;
         float coef1; //'2*m1/(m1+m2)'
         float coef2; //'2*m2/(m1+m2)'
         float coef3; //'(m1-m2)/(m1+m2)'
@@ -665,93 +665,71 @@ int checkCollision(string name, float dx, float dy){
             coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
         }
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
-            if(dx>0 && checkCollisionRight(col_object,my_object)){
+            if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
                 collide=1;
                 if(col_object.fixed==0){
                     //col_object.x_speed=my_object.x_speed/2;
                     //For object colliding with us set its speed using elastic collision
-                    col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
-                    col_object.x_speed/=(1+my_object.friction);
+                    col_object.x_speed=(coef1*my_object.x_speed-coef3*col_object.x_speed);
+                    col_object.y_speed=(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
-                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
-                        col_object.isRotating=1;
-                        col_object.direction=0;
-                        col_object.remAngle=90;
+                    if(col_object.isRotating==0 && name=="vishrectangle" && (abs(my_object.x_speed)>=15 || abs(my_object.y_speed)>=15)){
+                        if(my_object.x_speed>0 || my_object.y_speed>0){
+                            col_object.isRotating=1;
+                            col_object.direction=0;
+                            col_object.remAngle=90;
+                        }
+                        else{
+                            col_object.isRotating=1;
+                            col_object.direction=1;
+                            col_object.remAngle=90;
+                        }
                     }
                 }
-                if(col_object.fixed==1)
-                    my_object.x_speed*=-1;
-                else
-                    my_object.x_speed=-(coef3*my_object.x_speed-coef2*col_object.x_speed); //Use elastic collision
+                my_object.x-=dx;
+                my_object.y-=dy;
+                if(col_object.fixed==1){
+                    if(dx>0)
+                        my_object.x_speed*=-1;
+                    if(dy>0)
+                        my_object.y_speed*=-1;
+                    if(dx>0 && checkCollisionRight(col_object,my_object)){
+                        my_object.x=col_object.x-col_object.width/2-my_object.width/2;
+                    }
+                    else if(dx<0 && checkCollisionLeft(col_object,my_object)){
+                        my_object.x=col_object.x+col_object.width/2+my_object.width/2;
+                    }
+                    if(dy>0 && checkCollisionTop(col_object,my_object)){
+                        my_object.y=col_object.y-col_object.height/2-my_object.height/2;
+                    }
+                    else if(dy<0 && checkCollisionBottom(col_object,my_object)){
+                        my_object.y=col_object.y+col_object.height/2+my_object.height/2;
+                    }
+                }
+                else{
+                    my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
+                    my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
+                }
+                if(dy<=0){
+                    if(abs(objects[name].y_speed)<=7.5 && abs(objects[name].x_speed)<=7.5){ 
+                        my_object.y_speed=0;
+                        my_object.x_speed=0;
+                        my_object.inAir=0;
+                        if(name=="vishrectangle" && player_reset_timer==0 && player_status==1){
+                            player_reset_timer=30;
+                        }
+                    }
+                }
                 my_object.x_speed/=(1+col_object.friction);
-                my_object.x=col_object.x-col_object.width/2-my_object.width/2;
-            }
-            else if(dx<0 && checkCollisionLeft(col_object,my_object)){
+                my_object.y_speed/=(1+col_object.friction);
+                col_object.x_speed/=(1+my_object.friction);
+                col_object.y_speed/=(1+my_object.friction);
                 collide=1;
-                if(col_object.fixed==0){
-                    //col_object.x_speed=my_object.x_speed/2;
-                    //For object colliding with us set its speed using elastic collision
-                    col_object.x_speed=-abs(coef1*my_object.x_speed-coef3*col_object.x_speed);
-                    col_object.x_speed/=(1+my_object.friction);
-                    col_object.inAir=1;
-                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.x_speed)>=15){
-                        col_object.isRotating=1;
-                        col_object.direction=1;
-                        col_object.remAngle=90;
-                    }
-                }
-                if(col_object.fixed==1)
-                    my_object.x_speed*=-1;
-                else
-                    my_object.x_speed=-(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
-                my_object.x_speed/=(1+col_object.friction);
-                my_object.x=col_object.x+col_object.width/2+my_object.width/2;
-            }
-            if(dy>0 && checkCollisionTop(col_object,my_object)){
-                collide=1;
-                if(col_object.fixed==0){
-                    col_object.y_speed=my_object.y_speed/2;
-                    //For object colliding with us set its speed using elastic collision
-                    //col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
-                    col_object.inAir=1;
-                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
-                        col_object.isRotating=1;
-                        col_object.direction=0;
-                        col_object.remAngle=90;
-                    }
-                }
-                my_object.y=col_object.y-col_object.height/2-my_object.height/2;
-                my_object.y_speed*=-1;
-                my_object.y_speed/=2; //Don't use actual collision on y axis for colliding object
-            }
-            else if(dy<0 && checkCollisionBottom(col_object,my_object)){
-                collide=1;
-                if(col_object.fixed==0){
-                    col_object.y_speed=my_object.y_speed/2;
-                    //For object colliding with us set its speed using elastic collision
-                    //col_object.y_speed=-abs(coef1*my_object.y_speed-coef3*col_object.y_speed);
-                    col_object.inAir=1;
-                    if(col_object.isRotating==0 && name=="vishrectangle" && abs(my_object.y_speed)>=15){
-                        col_object.isRotating=1;
-                        col_object.direction=1;
-                        col_object.remAngle=90;
-                    }
-                }
-                if(abs(objects[name].y_speed)<=7.5 && abs(objects[name].x_speed)<=7.5){ 
-                    my_object.y_speed=0;
-                    my_object.x_speed=0;
-                    my_object.inAir=0;
-                    if(name=="vishrectangle" && player_reset_timer==0 && player_status==1)
-                        player_reset_timer=30;
-                }
-                my_object.y=col_object.y+col_object.height/2+my_object.height/2;
-                my_object.y_speed*=-1;
-                my_object.y_speed/=2; //Don't use actual collision on y axis for colliding object
             }
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0){
             any_collide=1;
-            col_object.health-=25;
+            //col_object.health-=25;
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
@@ -1182,7 +1160,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cloud1b",0,cloudwhite1,-180,110,40,260,"background");
     createRectangle("cloud2a",0,cloudwhite,190,160,100,200,"background");
     createRectangle("cloud2b",0,cloudwhite1,190,155,40,250,"background");
-    
+
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
@@ -1204,7 +1182,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("wall2",0,grey,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
-    
+
     createCircle("cannonaim",0,darkbrown,-320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
     createRectangle("cannonrectangle",0,darkbrown,-250,-240,40,80,"cannon");
@@ -1250,7 +1228,7 @@ int main (int argc, char** argv)
     initGL (window, width, height);
 
     double last_update_time = glfwGetTime(), current_time;
-    
+
     old_time = glfwGetTime();
     /* Draw in loop */
     while (!glfwWindowShouldClose(window)) {
