@@ -709,11 +709,6 @@ int checkCollision(string name, float dx, float dy){
                     my_object.y=col_object.y+col_object.height/2+my_object.height/2;
                 }
                 if(dy<0){
-                    if(abs(col_object.y_speed)<=7.5 || abs(col_object.y_speed)<=7.5){ 
-                        col_object.y_speed=0;
-                        col_object.x_speed=0;
-                        col_object.inAir=0;
-                    }
                     if(abs(objects[name].y_speed)<=7.5 || abs(objects[name].y_speed)<=7.5){ 
                         my_object.y_speed=0;
                         my_object.x_speed=0;
@@ -953,20 +948,9 @@ void draw (GLFWwindow* window)
         }
         if(objects[current].status==0)
             continue;
-        int onTop=0;
         if(objects[current].fixed==0 && objects[current].y_speed==0){
-            onTop=0;
-            for(map<string, Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
-                Sprite col_object = it2->second;
-                if(it2->first != current && checkCollisionBottom(objects[current],it2->second)){
-                    onTop=1;
-                }
-            }
-            if(onTop==0){
+            if(!checkCollision(current,0,0)){
                 objects[current].inAir=1;
-            }
-            else{
-                objects[current].inAir=0;
             }
         }
         if(objects[current].inAir && objects[current].fixed==0){
