@@ -70,7 +70,7 @@ map <string, Sprite> backgroundObjects;
 map <string, Sprite> goalObjects;
 
 float gravity = 1;
-float airResistance = 0.2;
+float airResistance = 0.2/15;
 int player_reset_timer=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
@@ -665,11 +665,9 @@ int checkCollision(string name, float dx, float dy){
             coef3=(my_object.weight-col_object.weight)/(my_object.weight+col_object.weight);
         }
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
-            if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
+            if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<=0 && checkCollisionBottom(col_object,my_object))){
                 collide=1;
                 if(col_object.fixed==0){
-                    //col_object.x_speed=my_object.x_speed/2;
-                    //For object colliding with us set its speed using elastic collision
                     col_object.x_speed=(coef1*my_object.x_speed-coef3*col_object.x_speed);
                     col_object.y_speed=(coef1*my_object.y_speed-coef3*col_object.y_speed);
                     col_object.inAir=1;
@@ -686,32 +684,37 @@ int checkCollision(string name, float dx, float dy){
                         }
                     }
                 }
-                my_object.x-=dx;
-                my_object.y-=dy;
-                if(col_object.fixed==1){
-                    if(dx>0)
-                        my_object.x_speed*=-1;
-                    if(dy>0)
-                        my_object.y_speed*=-1;
-                    if(dx>0 && checkCollisionRight(col_object,my_object)){
-                        my_object.x=col_object.x-col_object.width/2-my_object.width/2;
+                if(col_object.fixed==1 && name=="vishrectangle"){
+                    if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object))){
+                        my_object.x_speed*=-1/1.2;
                     }
-                    else if(dx<0 && checkCollisionLeft(col_object,my_object)){
-                        my_object.x=col_object.x+col_object.width/2+my_object.width/2;
-                    }
-                    if(dy>0 && checkCollisionTop(col_object,my_object)){
-                        my_object.y=col_object.y-col_object.height/2-my_object.height/2;
-                    }
-                    else if(dy<0 && checkCollisionBottom(col_object,my_object)){
-                        my_object.y=col_object.y+col_object.height/2+my_object.height/2;
+                    if((dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
+                        my_object.y_speed*=-1/1.2;
                     }
                 }
                 else{
                     my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
                     my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
                 }
-                if(dy<=0){
-                    if(abs(objects[name].y_speed)<=7.5 && abs(objects[name].x_speed)<=7.5){ 
+                if(dx>0 && checkCollisionRight(col_object,my_object)){
+                    my_object.x=col_object.x-col_object.width/2-my_object.width/2;
+                }
+                else if(dx<0 && checkCollisionLeft(col_object,my_object)){
+                    my_object.x=col_object.x+col_object.width/2+my_object.width/2;
+                }
+                if(dy>0 && checkCollisionTop(col_object,my_object)){
+                    my_object.y=col_object.y-col_object.height/2-my_object.height/2;
+                }
+                else if(dy<=0 && checkCollisionBottom(col_object,my_object)){
+                    my_object.y=col_object.y+col_object.height/2+my_object.height/2;
+                }
+                if(dy<0){
+                    if(abs(col_object.y_speed)<=7.5 || abs(col_object.y_speed)<=7.5){ 
+                        col_object.y_speed=0;
+                        col_object.x_speed=0;
+                        col_object.inAir=0;
+                    }
+                    if(abs(objects[name].y_speed)<=7.5 || abs(objects[name].y_speed)<=7.5){ 
                         my_object.y_speed=0;
                         my_object.x_speed=0;
                         my_object.inAir=0;
@@ -942,20 +945,37 @@ void draw (GLFWwindow* window)
 
     for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
         string current = it->first; //The name of the current object
+        if(current!="floor" && current!="floor2" && current!="roof" && current!="wall1" && current!="wall2"){
+            if(objects[current].y>270)
+                objects[current].y=270;
+            if(objects[current].y<-270)
+                objects[current].y=-270;
+        }
         if(objects[current].status==0)
             continue;
-        if(objects[current].fixed==0 && objects[current].inAir==0 && objects[current].y_speed==0){
-            if(!checkCollision(current,0,0)){
+        int onTop=0;
+        if(objects[current].fixed==0 && objects[current].y_speed==0){
+            onTop=0;
+            for(map<string, Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
+                Sprite col_object = it2->second;
+                if(it2->first != current && checkCollisionBottom(objects[current],it2->second)){
+                    onTop=1;
+                }
+            }
+            if(onTop==0){
                 objects[current].inAir=1;
+            }
+            else{
+                objects[current].inAir=0;
             }
         }
         if(objects[current].inAir && objects[current].fixed==0){
             if(objects[current].y_speed>=-30)
                 objects[current].y_speed-=gravity*time_delta;
             if(objects[current].x_speed>0)
-                objects[current].x_speed-=airResistance*time_delta;
+                objects[current].x_speed-=airResistance*time_delta*objects[current].x_speed;
             else if(objects[current].x_speed<0)
-                objects[current].x_speed+=airResistance*time_delta;
+                objects[current].x_speed+=airResistance*time_delta*objects[current].x_speed;
             pair<float,float> position = moveObject(current,objects[current].x_speed*time_delta,0);
             //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
             checkCollision(current,objects[current].x_speed*time_delta,0); //Always call the checkCollision function with only 1 position change at a time!
@@ -1152,14 +1172,14 @@ void initGL (GLFWwindow* window, int width, int height)
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
     //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
-    createRectangle("asky1",0,skyblue,0,0,600,800,"background");
-    createRectangle("asky2",0,skyblue1,0,-200,600,800,"background");
-    createRectangle("asky3",0,skyblue2,0,-400,600,800,"background");
+    createRectangle("asky1",10000,skyblue,0,0,600,800,"background");
+    createRectangle("asky2",10000,skyblue1,0,-200,600,800,"background");
+    createRectangle("asky3",10000,skyblue2,0,-400,600,800,"background");
 
-    createRectangle("cloud1a",0,cloudwhite,-190,110,100,200,"background");
-    createRectangle("cloud1b",0,cloudwhite1,-180,110,40,260,"background");
-    createRectangle("cloud2a",0,cloudwhite,190,160,100,200,"background");
-    createRectangle("cloud2b",0,cloudwhite1,190,155,40,250,"background");
+    createRectangle("cloud1a",10000,cloudwhite,-190,110,100,200,"background");
+    createRectangle("cloud1b",10000,cloudwhite1,-180,110,40,260,"background");
+    createRectangle("cloud2a",10000,cloudwhite,190,160,100,200,"background");
+    createRectangle("cloud2b",10000,cloudwhite1,190,155,40,250,"background");
 
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
@@ -1167,35 +1187,35 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("vishrectangle3",1,cratebrown1,200,60,30,30,"");
     createRectangle("vishrectangle4",1,cratebrown2,200,90,30,30,"");
     createRectangle("vishrectangle5",1,cratebrown,200,120,30,30,"");
-    createRectangle("floor",0,lightgreen,0,-300,60,800,"");
+    createRectangle("floor",10000,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("floor2",0,darkgreen,0,-300,35,800,"");
+    createRectangle("floor2",10000,darkgreen,0,-300,35,800,"");
     objects["floor2"].fixed=1;
     objects["floor2"].friction=0.5;
-    createRectangle("roof",0,grey,0,300,60,800,"");
+    createRectangle("roof",10000,grey,0,300,60,800,"");
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",0,grey,-400,0,600,60,"");
+    createRectangle("wall1",10000,grey,-400,0,600,60,"");
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",0,grey,400,0,600,60,"");
+    createRectangle("wall2",10000,grey,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
 
-    createCircle("cannonaim",0,darkbrown,-320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",100000,darkbrown,-320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",0,darkbrown,-250,-240,40,80,"cannon");
+    createRectangle("cannonrectangle",100000,darkbrown,-250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
-    createCircle("cannoncircle",0,darkbrown,-320,-240,45,12,"cannon",1); 
+    createCircle("cannoncircle",100000,darkbrown,-320,-240,45,12,"cannon",1); 
     //The objects are drawn in the lexicographic ordering of their names
-    createCircle("cannoncircle2",0,lightbrown,-320,-240,35,12,"cannon",1);
+    createCircle("cannoncircle2",100000,lightbrown,-320,-240,35,12,"cannon",1);
 
-    createCircle("coin1",0,gold,320,-40,15,12,"coin",1);
-    createCircle("coin2",0,gold,20,-40,15,12,"coin",1);
+    createCircle("coin1",100000,gold,320,-40,15,12,"coin",1);
+    createCircle("coin2",100000,gold,20,-40,15,12,"coin",1);
 
-    createCircle("goal1",0,darkgreen,130,-40,15,15,"goal",1);
+    createCircle("goal1",100000,darkgreen,130,-40,15,15,"goal",1);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
