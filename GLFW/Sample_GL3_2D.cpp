@@ -333,9 +333,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             if (action == GLFW_PRESS) {
                 mouse_clicked=1;
                 cannonObjects["cannonaim"].status=1;
+                backgroundObjects["cannonpowerdisplay"].status=1;
             }
             if (action == GLFW_RELEASE) {
                 mouse_clicked=0;
+                backgroundObjects["cannonpowerdisplay"].status=0;
                 cannonObjects["cannonaim"].status=0;
                 if(player_status==0){
                     player_status=1;
@@ -837,6 +839,12 @@ void draw (GLFWwindow* window)
             angle*=180/M_PI;
         }
         cannonObjects["cannonrectangle"].angle=angle;
+        double power = mouse_x_cur*mouse_x_cur+(mouse_y_cur-600)*(mouse_y_cur-600);
+        double max_power=760*760+560*560;
+        double width=min((power/max_power)*160,160.0);
+        backgroundObjects["cannonpowerdisplay"].x=-350+width/2;
+        backgroundObjects["cannonpowerdisplay"].width=width;
+        createRectangle("cannonpowerdisplay",10000,backgroundObjects["cannonpowerdisplay"].color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
     }
     if(player_reset_timer>0){
         player_reset_timer-=1;
@@ -1200,7 +1208,11 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("cloud2ac2",10000,cloudwhite,270,160,50,15,"background",1); //Last param is fill
     createCircle("cloud2bc1",10000,cloudwhite1,60,155,20,15,"background",1);
     createCircle("cloud2bc2",10000,cloudwhite1,320,155,20,15,"background",1); //Last param is fill
-    
+
+    createRectangle("cannonpower1",10000,cratebrown2,-270,250,40,200,"background");
+    createRectangle("cannonpower2",10000,cratebrown1,-270,250,25,160,"background");
+    createRectangle("cannonpowerdisplay",10000,red,-270,250,25,0,"background");
+
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
