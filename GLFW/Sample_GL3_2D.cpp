@@ -963,10 +963,14 @@ void draw (GLFWwindow* window)
     for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
         string current = it->first; //The name of the current object
         if(current!="floor" && current!="floor2" && current!="roof" && current!="wall1" && current!="wall2"){
-            if(objects[current].y>270)
-                objects[current].y=270;
-            if(objects[current].y<-270)
+            if(objects[current].y>250){
+                objects[current].y=250;
+                objects[current].y_speed*=-1/2;
+            }
+            if(objects[current].y<-270){
                 objects[current].y=-270;
+                objects[current].y_speed*=-1;
+            }
         }
         if(objects[current].status==0)
             continue;
