@@ -1188,11 +1188,19 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("asky2",10000,skyblue1,0,-200,600,800,"background");
     createRectangle("asky3",10000,skyblue2,0,-400,600,800,"background");
 
-    createRectangle("cloud1a",10000,cloudwhite,-190,110,100,200,"background");
+    createRectangle("cloud1a",10000,cloudwhite,-170,110,100,160,"background");
     createRectangle("cloud1b",10000,cloudwhite1,-180,110,40,260,"background");
-    createRectangle("cloud2a",10000,cloudwhite,190,160,100,200,"background");
-    createRectangle("cloud2b",10000,cloudwhite1,190,155,40,250,"background");
-
+    createRectangle("cloud2a",10000,cloudwhite,190,160,100,160,"background");
+    createRectangle("cloud2b",10000,cloudwhite1,190,155,40,270,"background");
+    createCircle("cloud1ac1",10000,cloudwhite,-250,110,50,15,"background",1);
+    createCircle("cloud1ac2",10000,cloudwhite,-90,110,50,15,"background",1); //Last param is fill
+    createCircle("cloud1bc1",10000,cloudwhite1,-310,110,20,15,"background",1);
+    createCircle("cloud1bc2",10000,cloudwhite1,-40,110,20,15,"background",1); //Last param is fill
+    createCircle("cloud2ac1",10000,cloudwhite,110,160,50,15,"background",1);
+    createCircle("cloud2ac2",10000,cloudwhite,270,160,50,15,"background",1); //Last param is fill
+    createCircle("cloud2bc1",10000,cloudwhite1,60,155,20,15,"background",1);
+    createCircle("cloud2bc2",10000,cloudwhite1,320,155,20,15,"background",1); //Last param is fill
+    
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
