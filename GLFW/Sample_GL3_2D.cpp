@@ -671,9 +671,19 @@ int checkCollision(string name, float dx, float dy){
         if(colliding!=name && col_object.height!=-1){ //Check collision only with circles and rectangles
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<=0 && checkCollisionBottom(col_object,my_object))){
                 collide=1;
+                /*float angle_from_x = atan2((col_object.y-my_object.y),(col_object.x-my_object.x));
+                float my_speed_x = cos(angle_from_x)*my_object.x_speed+sin(angle_from_x)*my_object.y_speed;
+                float my_speed_y = sin(angle_from_x)*my_object.x_speed+cos(angle_from_x)*my_object.y_speed;
+                float col_speed_x = cos(angle_from_x)*col_object.x_speed+sin(angle_from_x)*col_object.y_speed;
+                float col_speed_y = sin(angle_from_x)*col_object.x_speed+cos(angle_from_x)*col_object.y_speed;
+                cout << angle_from_x*180/M_PI << endl;*/
                 if(col_object.fixed==0){
                     col_object.x_speed=(coef1*my_object.x_speed-coef3*col_object.x_speed);
                     col_object.y_speed=(coef1*my_object.y_speed-coef3*col_object.y_speed);
+                    //float col_x_speed_new=(coef1*my_speed_x-coef3*col_speed_x);
+                    //float col_y_speed_new=(coef1*my_speed_y-coef3*col_speed_y);
+                    //col_object.x_speed=cos(angle_from_x)*col_x_speed_new+sin(angle_from_x)*col_y_speed_new;
+                    //col_object.y_speed=cos(angle_from_x)*col_y_speed_new+sin(angle_from_x)*col_x_speed_new;
                     col_object.inAir=1;
                     if(col_object.isRotating==0 && name=="vishrectangle" && (abs(my_object.x_speed)>=15 || abs(my_object.y_speed)>=15)){
                         if(my_object.x_speed>0 || my_object.y_speed>0){
@@ -699,6 +709,10 @@ int checkCollision(string name, float dx, float dy){
                 else{
                     my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
                     my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
+                    //float my_x_speed_new=(coef3*my_speed_x+coef2*col_speed_x);
+                    //float my_y_speed_new=(coef3*my_speed_y+coef2*col_speed_y);
+                    //my_object.x_speed=cos(angle_from_x)*my_x_speed_new+sin(angle_from_x)*my_y_speed_new;
+                    //my_object.y_speed=cos(angle_from_x)*my_y_speed_new+sin(angle_from_x)*my_x_speed_new;
                 }
                 if(dx>0 && checkCollisionRight(col_object,my_object)){
                     my_object.x=col_object.x-col_object.width/2-my_object.width/2;
