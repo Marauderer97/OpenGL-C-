@@ -1004,10 +1004,7 @@ void draw (GLFWwindow* window)
         if(objects[current].inAir && objects[current].fixed==0){
             if(objects[current].y_speed>=-30)
                 objects[current].y_speed-=gravity*time_delta;
-            if(objects[current].x_speed>0)
-                objects[current].x_speed-=airResistance*time_delta*objects[current].x_speed;
-            else if(objects[current].x_speed<0)
-                objects[current].x_speed+=airResistance*time_delta*objects[current].x_speed;
+            objects[current].x_speed-=airResistance*time_delta*objects[current].x_speed;
             pair<float,float> position = moveObject(current,objects[current].x_speed*time_delta,0);
             //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
             checkCollision(current,objects[current].x_speed*time_delta,0); //Always call the checkCollision function with only 1 position change at a time!
@@ -1029,7 +1026,7 @@ void draw (GLFWwindow* window)
         if (objects[current].isRotating==1 && current!="vishrectangle"){
             objects[current].remAngle-=7;
             float rotationAngle = 90-objects[current].remAngle;
-            float xShift = -1.1;
+            float xShift = -0.5;
             if(objects[current].direction==0){
                 rotationAngle*=-1;
                 xShift*=-1;
