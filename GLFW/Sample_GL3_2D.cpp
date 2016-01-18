@@ -401,7 +401,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
 
 
 // Creates the triangle object used in this sample code
-void createTriangle (string name, float weight, COLOR color, float x[], float y[], string component)
+void createTriangle (string name, float weight, COLOR color, float x[], float y[], string component, int fill)
 {
     /* ONLY vertices between the bounds specified in glm::ortho will be visible on screen */
 
@@ -421,7 +421,11 @@ void createTriangle (string name, float weight, COLOR color, float x[], float y[
     };
 
     // create3DObject creates and returns a handle to a VAO that can be used later
-    VAO *triangle = create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
+    VAO *triangle;
+    if(fill==1)
+        triangle=create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_FILL);
+    else
+        triangle=create3DObject(GL_TRIANGLES, 3, vertex_buffer_data, color_buffer_data, GL_LINE);
     Sprite vishsprite = {};
     vishsprite.color = color;
     vishsprite.name = name;
@@ -568,28 +572,28 @@ float rectangle_rotation = 0;
 float triangle_rotation = 0;
 
 int checkCollisionRight(Sprite col_object, Sprite my_object){
-    if(col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
+    if(col_object.x>my_object.x && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2){
         return 1;
     }
     return 0;
 }
 
 int checkCollisionLeft(Sprite col_object, Sprite my_object){
-    if(col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
+    if(col_object.x<my_object.x && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2){
         return 1;
     }
     return 0;
 }
 
 int checkCollisionTop(Sprite col_object, Sprite my_object){
-    if(col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
+    if(col_object.y>my_object.y && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2){
         return 1;
     }
     return 0;
 }
 
 int checkCollisionBottom(Sprite col_object, Sprite my_object){
-    if(col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
+    if(col_object.y<my_object.y && col_object.x+col_object.width/2>my_object.x-my_object.width/2 && col_object.x-col_object.width/2<my_object.x+my_object.width/2 && col_object.y+col_object.height/2>my_object.y-my_object.height/2 && col_object.y-col_object.height/2<my_object.y+my_object.height/2){
         return 1;
     }
     return 0;
@@ -601,7 +605,15 @@ int checkCollisionBottom(Sprite col_object, Sprite my_object){
 //Best Method
 int checkCollision(string name, float dx, float dy){
     int any_collide=0;
-    if(name=="vishrectangle"){ 
+    if(name=="vishrectangle"){
+        if(checkCollisionBottom(objects["springbase2"],objects["vishrectangle"])){
+            if(objects["springbase2"].isMovingAnim==0){
+                objects["springbase2"].isMovingAnim=1;
+                objects["springbase2"].dy=15;
+                objects["springbase3"].isMovingAnim=1;
+                objects["springbase3"].dy=15;
+            } 
+        }
         for(map<string,Sprite>::iterator it2=coins.begin();it2!=coins.end();it2++){
             Sprite col_object=coins[it2->first];
             Sprite my_object=objects["vishrectangle"];
@@ -985,8 +997,8 @@ void draw (GLFWwindow* window)
     for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
         string current = it->first; //The name of the current object
         if(current!="floor" && current!="floor2" && current!="roof" && current!="wall1" && current!="wall2"){
-            if(objects[current].y>250){
-                objects[current].y=250;
+            if(objects[current].y>245){
+                objects[current].y=245;
                 objects[current].y_speed*=-1/2;
             }
             if(objects[current].y<-270){
@@ -1023,6 +1035,27 @@ void draw (GLFWwindow* window)
         /* Render your scene */
 
         glm::mat4 triangleTransform;
+
+        if(objects[current].isMovingAnim==1 && (current=="springbase2" || current=="springbase3")){
+            if(objects[current].dy>0){
+                float dy=objects[current].dy;
+                float y=objects[current].y;
+                if(current=="springbase3"){
+                    createRectangle("springbase3",10000,objects["springbase3"].color,0,objects["springbase3"].y,objects["springbase3"].height-1,20,"");
+                    objects["springbase3"].fixed=1;
+                    y+=1/2.0;
+                    objects["springbase3"].isMovingAnim=1;
+                }
+                objects[current].dy=dy-1;
+                objects[current].y=y-1;
+                if(objects[current].dy==0){
+                    goalObjects["goal1"].status=1;
+                    objects[current].isMovingAnim=2;
+                    objects["springbase1"].isMovingAnim=2; //To activate the goal, check for the status of the springbase1,2 or 3 if its equal to 2
+                }
+            }
+        }
+
         if (objects[current].isRotating==1 && current!="vishrectangle"){
             objects[current].remAngle-=7;
             float rotationAngle = 90-objects[current].remAngle;
@@ -1202,7 +1235,6 @@ void initGL (GLFWwindow* window, int width, int height)
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
-    //createTriangle("vishtriangle",vishcolor,x,y); // Generate the VAO, VBOs, vertices data & copy into the array buffer
     createRectangle("asky1",10000,skyblue,0,0,600,800,"background");
     createRectangle("asky2",10000,skyblue1,0,-200,600,800,"background");
     createRectangle("asky3",10000,skyblue2,0,-400,600,800,"background");
@@ -1223,6 +1255,15 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cannonpower1",10000,cratebrown2,-270,250,40,200,"background");
     createRectangle("cannonpower2",10000,cratebrown1,-270,250,25,160,"background");
     createRectangle("cannonpowerdisplay",10000,red,-270,250,25,0,"background");
+
+    createRectangle("skyfloor1",10000,cratebrown1,-10,30,20,100,"");
+    objects["skyfloor1"].fixed=1;
+    createRectangle("springbase1",10000,cratebrown2,0,50,20,40,"");
+    objects["springbase1"].fixed=1;
+    createRectangle("springbase2",10000,cratebrown2,0,90,20,40,"");
+    objects["springbase2"].fixed=1;
+    createRectangle("springbase3",10000,cratebrown,0,70,40,20,"");
+    objects["springbase3"].fixed=1;
 
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.5;
@@ -1259,6 +1300,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("coin2",100000,gold,20,-40,15,12,"coin",1);
 
     createCircle("goal1",100000,darkgreen,130,-40,15,15,"goal",1);
+    goalObjects["goal1"].status=0;
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
