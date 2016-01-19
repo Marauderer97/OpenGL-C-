@@ -719,8 +719,10 @@ int checkCollision(string name, float dx, float dy){
                     }
                 }
                 else{
-                    my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
-                    my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
+                    if(name!="vishrectangle"){
+                        my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
+                        my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
+                    }
                     //float my_x_speed_new=(coef3*my_speed_x+coef2*col_speed_x);
                     //float my_y_speed_new=(coef3*my_speed_y+coef2*col_speed_y);
                     //my_object.x_speed=cos(angle_from_x)*my_x_speed_new+sin(angle_from_x)*my_y_speed_new;
@@ -739,7 +741,7 @@ int checkCollision(string name, float dx, float dy){
                     my_object.y=col_object.y+col_object.height/2+my_object.height/2;
                 }
                 if(dy!=0){
-                    if(abs(objects[name].y_speed)<=7.5){ 
+                    if(abs(objects[name].y_speed)<=7.5 && abs(objects[name].x_speed)<=7.5){ 
                         my_object.y_speed=0;
                         my_object.x_speed=0;
                         my_object.inAir=0;
@@ -755,9 +757,9 @@ int checkCollision(string name, float dx, float dy){
                 collide=1;
             }
         }
-        if(collide==1 && name=="vishrectangle" && col_object.fixed==0){
+        if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            //col_object.health-=25;
+            col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
@@ -1266,7 +1268,7 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["springbase3"].fixed=1;
 
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
-    objects["vishrectangle"].friction=0.5;
+    objects["vishrectangle"].friction=0.3;
     createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
     createRectangle("vishrectangle3",1,cratebrown1,200,60,30,30,"");
     createRectangle("vishrectangle4",1,cratebrown2,200,90,30,30,"");
