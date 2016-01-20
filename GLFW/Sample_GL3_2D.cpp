@@ -522,7 +522,7 @@ void createTriangle (string name, float weight, COLOR color, float x[], float y[
 }
 
 // Creates the rectangle object used in this sample code
-void createRectangle (string name, float weight, COLOR color, float x, float y, float height, float width, string component)
+void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COLOR colorC, COLOR colorD, float x, float y, float height, float width, string component)
 {
     // GL3 accepts only Triangles. Quads are not supported
     float w=width/2,h=height/2;
@@ -537,19 +537,19 @@ void createRectangle (string name, float weight, COLOR color, float x, float y, 
     };
 
     GLfloat color_buffer_data [] = {
-        color.r,color.g,color.b, // color 1
-        color.r,color.g,color.b, // color 2
-        color.r,color.g,color.b, // color 3
+        colorA.r,colorA.g,colorA.b, // color 1
+        colorB.r,colorB.g,colorB.b, // color 2
+        colorC.r,colorC.g,colorC.b, // color 3
 
-        color.r,color.g,color.b, // color 4
-        color.r,color.g,color.b, // color 5
-        color.r,color.g,color.b // color 6
+        colorC.r,colorC.g,colorC.b, // color 4
+        colorD.r,colorD.g,colorD.b, // color 5
+        colorA.r,colorA.g,colorA.b // color 6
     };
 
     // create3DObject creates and returns a handle to a VAO that can be used later
     VAO *rectangle = create3DObject(GL_TRIANGLES, 6, vertex_buffer_data, color_buffer_data, GL_FILL);
     Sprite vishsprite = {};
-    vishsprite.color = color;
+    vishsprite.color = colorA;
     vishsprite.name = name;
     vishsprite.object = rectangle;
     vishsprite.x=x;
@@ -939,7 +939,8 @@ void draw (GLFWwindow* window)
         double width=min((power/max_power)*160,160.0);
         backgroundObjects["cannonpowerdisplay"].x=-350+width/2;
         backgroundObjects["cannonpowerdisplay"].width=width;
-        createRectangle("cannonpowerdisplay",10000,backgroundObjects["cannonpowerdisplay"].color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
+        COLOR my_color = backgroundObjects["cannonpowerdisplay"].color;
+        createRectangle("cannonpowerdisplay",10000,my_color,my_color,my_color,my_color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
         if(player_reset_timer>0){
             player_reset_timer-=1;
             if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
@@ -966,7 +967,8 @@ void draw (GLFWwindow* window)
         double width=min((power/max_power)*160,160.0);
         backgroundObjects["cannonpowerdisplay"].x=-350+width/2;
         backgroundObjects["cannonpowerdisplay"].width=width;
-        createRectangle("cannonpowerdisplay",10000,backgroundObjects["cannonpowerdisplay"].color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
+        COLOR my_color = backgroundObjects["cannonpowerdisplay"].color;
+        createRectangle("cannonpowerdisplay",10000,my_color,my_color,my_color,my_color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
     }
     if(player_reset_timer>0){
         player_reset_timer-=1;
@@ -1137,7 +1139,8 @@ void draw (GLFWwindow* window)
                 float dy=objects[current].dy;
                 float y=objects[current].y;
                 if(current=="springbase3"){
-                    createRectangle("springbase3",10000,objects["springbase3"].color,0,objects["springbase3"].y,objects["springbase3"].height-1,20,"");
+                    COLOR my_color = objects["springbase3"].color;
+                    createRectangle("springbase3",10000,my_color,my_color,my_color,my_color,0,objects["springbase3"].y,objects["springbase3"].height-1,20,"");
                     objects["springbase3"].fixed=1;
                     y+=1/2.0;
                     objects["springbase3"].isMovingAnim=1;
@@ -1331,14 +1334,14 @@ void initGL (GLFWwindow* window, int width, int height)
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
-    createRectangle("asky1",10000,skyblue,0,0,600,800,"background");
-    createRectangle("asky2",10000,skyblue1,0,-200,600,800,"background");
-    createRectangle("asky3",10000,skyblue2,0,-400,600,800,"background");
+    createRectangle("asky1",10000,skyblue,skyblue,skyblue,skyblue,0,0,600,800,"background");
+    createRectangle("asky2",10000,skyblue1,skyblue1,skyblue1,skyblue1,0,-200,600,800,"background");
+    createRectangle("asky3",10000,skyblue2,skyblue2,skyblue2,skyblue2,0,-400,600,800,"background");
 
-    createRectangle("cloud1a",10000,cloudwhite,-170,110,100,160,"background");
-    createRectangle("cloud1b",10000,cloudwhite1,-180,110,40,260,"background");
-    createRectangle("cloud2a",10000,cloudwhite,190,160,100,160,"background");
-    createRectangle("cloud2b",10000,cloudwhite1,190,155,40,270,"background");
+    createRectangle("cloud1a",10000,cloudwhite,cloudwhite,cloudwhite,cloudwhite,-170,110,100,160,"background");
+    createRectangle("cloud1b",10000,cloudwhite1,cloudwhite1,cloudwhite1,cloudwhite1,-180,110,40,260,"background");
+    createRectangle("cloud2a",10000,cloudwhite,cloudwhite,cloudwhite,cloudwhite,190,160,100,160,"background");
+    createRectangle("cloud2b",10000,cloudwhite1,cloudwhite1,cloudwhite1,cloudwhite1,190,155,40,270,"background");
     createCircle("cloud1ac1",10000,cloudwhite,-250,110,50,15,"background",1);
     createCircle("cloud1ac2",10000,cloudwhite,-90,110,50,15,"background",1); //Last param is fill
     createCircle("cloud1bc1",10000,cloudwhite1,-310,110,20,15,"background",1);
@@ -1348,44 +1351,44 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("cloud2bc1",10000,cloudwhite1,60,155,20,15,"background",1);
     createCircle("cloud2bc2",10000,cloudwhite1,320,155,20,15,"background",1); //Last param is fill
 
-    createRectangle("cannonpower1",10000,cratebrown2,-270,250,40,200,"background");
-    createRectangle("cannonpower2",10000,cratebrown1,-270,250,25,160,"background");
-    createRectangle("cannonpowerdisplay",10000,red,-270,250,25,0,"background");
+    createRectangle("cannonpower1",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,-270,250,40,200,"background");
+    createRectangle("cannonpower2",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-270,250,25,160,"background");
+    createRectangle("cannonpowerdisplay",10000,red,red,red,red,-270,250,25,0,"background");
 
-    createRectangle("skyfloor1",10000,cratebrown1,-10,30,20,100,"");
+    createRectangle("skyfloor1",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-10,30,20,100,"");
     objects["skyfloor1"].fixed=1;
-    createRectangle("springbase1",10000,cratebrown2,0,50,20,40,"");
+    createRectangle("springbase1",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,0,50,20,40,"");
     objects["springbase1"].fixed=1;
-    createRectangle("springbase2",10000,cratebrown2,0,90,20,40,"");
+    createRectangle("springbase2",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,0,90,20,40,"");
     objects["springbase2"].fixed=1;
-    createRectangle("springbase3",10000,cratebrown,0,70,40,20,"");
+    createRectangle("springbase3",10000,cratebrown,cratebrown,cratebrown,cratebrown,0,70,40,20,"");
     objects["springbase3"].fixed=1;
 
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.3;
-    createRectangle("vishrectangle2",1,cratebrown,200,30,30,30,"");
-    createRectangle("vishrectangle3",1,cratebrown1,200,60,30,30,"");
-    createRectangle("vishrectangle4",1,cratebrown2,200,90,30,30,"");
-    createRectangle("vishrectangle5",1,cratebrown,200,120,30,30,"");
-    createRectangle("floor",10000,lightgreen,0,-300,60,800,"");
+    createRectangle("vishrectangle2",1,cratebrown,cratebrown,cratebrown,cratebrown,200,30,30,30,"");
+    createRectangle("vishrectangle3",1,cratebrown1,cratebrown1,cratebrown1,cratebrown1,200,60,30,30,"");
+    createRectangle("vishrectangle4",1,cratebrown2,cratebrown2,cratebrown2,cratebrown2,200,90,30,30,"");
+    createRectangle("vishrectangle5",1,cratebrown,cratebrown,cratebrown,cratebrown,200,120,30,30,"");
+    createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("floor2",10000,darkgreen,0,-300,35,800,"");
+    createRectangle("floor2",10000,darkgreen,darkgreen,darkgreen,darkgreen,0,-300,35,800,"");
     objects["floor2"].fixed=1;
     objects["floor2"].friction=0.5;
-    createRectangle("roof",10000,grey,0,300,60,800,"");
+    createRectangle("roof",10000,grey,grey,grey,grey,0,300,60,800,"");
     objects["roof"].fixed=1;
     objects["roof"].friction=0.5;
-    createRectangle("wall1",10000,grey,-400,0,600,60,"");
+    createRectangle("wall1",10000,grey,grey,grey,grey,-400,0,600,60,"");
     objects["wall1"].fixed=1;
     objects["wall1"].friction=0.5;
-    createRectangle("wall2",10000,grey,400,0,600,60,"");
+    createRectangle("wall2",10000,grey,grey,grey,grey,400,0,600,60,"");
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
 
     createCircle("cannonaim",100000,darkbrown,-320,-240,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",100000,darkbrown,-250,-240,40,80,"cannon");
+    createRectangle("cannonrectangle",100000,darkbrown,darkbrown,darkbrown,darkbrown,-250,-240,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
     createCircle("cannoncircle",100000,darkbrown,-320,-240,45,12,"cannon",1); 
