@@ -72,6 +72,7 @@ map <string, Sprite> goalObjects;
 float gravity = 1;
 float airResistance = 0.2/15;
 int player_reset_timer=0;
+double click_time=0;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name].x+=dx;
@@ -259,12 +260,71 @@ bool rectangle_rot_status = true;
 
 /* Executed when a regular key is pressed/released/held-down */
 /* Prefered for Keyboard events */
+double launch_power=0;
+double launch_angle=0;
+int keyboard_pressed=0;
+
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     // Function is called first on GLFW_PRESS.
 
     if (action == GLFW_RELEASE) {
         switch (key) {
+            case GLFW_KEY_Y:
+                if(launch_power>(760*760+560*560)/10)
+                    launch_power-=(760*760+560*560)/10;
+                else
+                    launch_power=0;
+                break;
+            case GLFW_KEY_I:
+                if(launch_power<760*760+560*560-(760*760+560*560)/10)
+                    launch_power+=(760*760+560*560)/10;
+                else
+                    launch_power=760*760+560*560;
+                break;
+            case GLFW_KEY_H:
+                if(launch_angle<90-10)
+                    launch_angle+=10;
+                else
+                    launch_angle=90;
+                break;
+            case GLFW_KEY_K:
+                if(launch_angle>10)
+                    launch_angle-=10;
+                else
+                    launch_angle=0;
+                break;
+            case GLFW_KEY_U:
+                cout << "START KEYBOARD" << endl;
+                keyboard_pressed=1;
+                cannonObjects["cannonaim"].status=1;
+                backgroundObjects["cannonpowerdisplay"].status=1;
+                launch_power=(760*760+560*560)/10;
+                break;
+            case GLFW_KEY_J:
+                cout << "END KEYBOARD" << endl;
+                click_time=glfwGetTime();
+                keyboard_pressed=0;
+                backgroundObjects["cannonpowerdisplay"].status=0;
+                cannonObjects["cannonaim"].status=0;
+                if(player_status==0){
+                    player_status=1;
+                    if(objects["vishrectangle"].inAir == 0){
+                        objects["vishrectangle"].inAir = 1;
+                        objects["vishrectangle"].x = -320+cos(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                        objects["vishrectangle"].y = -240+sin(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                        //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
+                        //Also adjust the sensitivity of the mouse drag as required
+                        objects["vishrectangle"].y_speed = min((abs(launch_power*10/89120)*sin(launch_angle*(M_PI/180))),30.0);
+                        objects["vishrectangle"].x_speed = min((abs(launch_power*10/89120)*cos(launch_angle*(M_PI/180))),20.0);
+                        for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+                            string current = it->first; //The name of the current object
+                            cannonObjects[current].dx=16;
+                            cannonObjects[current].isMovingAnim=1;
+                        }
+                    }
+                }
+                break;
             case GLFW_KEY_C:
                 rectangle_rot_status = !rectangle_rot_status;
                 break;
@@ -292,6 +352,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                     }
                 }
                 player_status=0;
+                break;
             default:
                 break;
         }
@@ -323,7 +384,38 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 int mouse_clicked=0;
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
-double click_time=0;
+
+void mouse_click(){
+    mouse_clicked=1;
+    cannonObjects["cannonaim"].status=1;
+    backgroundObjects["cannonpowerdisplay"].status=1;
+}
+
+void mouse_release(GLFWwindow* window, int button){ 
+    mouse_clicked=0;
+    backgroundObjects["cannonpowerdisplay"].status=0;
+    cannonObjects["cannonaim"].status=0;
+    if(player_status==0){
+        player_status=1;
+        glfwGetCursorPos(window,&mouse_x,&mouse_y);
+        if(objects["vishrectangle"].inAir == 0){
+            objects["vishrectangle"].inAir = 1;
+            float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
+            objects["vishrectangle"].x = -320+cos(angle)*cannonObjects["cannonrectangle"].width;
+            objects["vishrectangle"].y = -240+sin(angle)*cannonObjects["cannonrectangle"].width;
+            //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
+            //Also adjust the sensitivity of the mouse drag as required
+            click_time=glfwGetTime();
+            objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
+            objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
+            for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
+                string current = it->first; //The name of the current object
+                cannonObjects[current].dx=16;
+                cannonObjects[current].isMovingAnim=1;
+            }
+        }
+    }
+}
 
 /* Executed when a mouse button is pressed/released */
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
@@ -331,34 +423,10 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_PRESS) {
-                mouse_clicked=1;
-                cannonObjects["cannonaim"].status=1;
-                backgroundObjects["cannonpowerdisplay"].status=1;
+                mouse_click();
             }
             if (action == GLFW_RELEASE) {
-                mouse_clicked=0;
-                backgroundObjects["cannonpowerdisplay"].status=0;
-                cannonObjects["cannonaim"].status=0;
-                if(player_status==0){
-                    player_status=1;
-                    glfwGetCursorPos(window,&mouse_x,&mouse_y);
-                    if(objects["vishrectangle"].inAir == 0){
-                        objects["vishrectangle"].inAir = 1;
-                        float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
-                        objects["vishrectangle"].x = -320+cos(angle)*cannonObjects["cannonrectangle"].width;
-                        objects["vishrectangle"].y = -240+sin(angle)*cannonObjects["cannonrectangle"].width;
-                        //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
-                        //Also adjust the sensitivity of the mouse drag as required
-                        click_time=glfwGetTime();
-                        objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
-                        objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
-                        for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
-                            string current = it->first; //The name of the current object
-                            cannonObjects[current].dx=16;
-                            cannonObjects[current].isMovingAnim=1;
-                        }
-                    }
-                }
+                mouse_release(window,button);
                 triangle_rot_dir *= -1;
             }
             break;
@@ -684,11 +752,11 @@ int checkCollision(string name, float dx, float dy){
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<=0 && checkCollisionBottom(col_object,my_object))){
                 collide=1;
                 /*float angle_from_x = atan2((col_object.y-my_object.y),(col_object.x-my_object.x));
-                float my_speed_x = cos(angle_from_x)*my_object.x_speed+sin(angle_from_x)*my_object.y_speed;
-                float my_speed_y = sin(angle_from_x)*my_object.x_speed+cos(angle_from_x)*my_object.y_speed;
-                float col_speed_x = cos(angle_from_x)*col_object.x_speed+sin(angle_from_x)*col_object.y_speed;
-                float col_speed_y = sin(angle_from_x)*col_object.x_speed+cos(angle_from_x)*col_object.y_speed;
-                cout << angle_from_x*180/M_PI << endl;*/
+                  float my_speed_x = cos(angle_from_x)*my_object.x_speed+sin(angle_from_x)*my_object.y_speed;
+                  float my_speed_y = sin(angle_from_x)*my_object.x_speed+cos(angle_from_x)*my_object.y_speed;
+                  float col_speed_x = cos(angle_from_x)*col_object.x_speed+sin(angle_from_x)*col_object.y_speed;
+                  float col_speed_y = sin(angle_from_x)*col_object.x_speed+cos(angle_from_x)*col_object.y_speed;
+                  cout << angle_from_x*180/M_PI << endl;*/
                 if(col_object.fixed==0){
                     col_object.x_speed=(coef1*my_object.x_speed-coef3*col_object.x_speed);
                     col_object.y_speed=(coef1*my_object.y_speed-coef3*col_object.y_speed);
@@ -855,7 +923,25 @@ void draw (GLFWwindow* window)
     }
 
     float time_delta = (cur_time-old_time)*60;
-    if (mouse_clicked==1) {
+
+    if(keyboard_pressed==1){ 
+        cannonObjects["cannonrectangle"].angle=launch_angle;
+        double power = launch_power;
+        double max_power=760*760+560*560;
+        double width=min((power/max_power)*160,160.0);
+        backgroundObjects["cannonpowerdisplay"].x=-350+width/2;
+        backgroundObjects["cannonpowerdisplay"].width=width;
+        createRectangle("cannonpowerdisplay",10000,backgroundObjects["cannonpowerdisplay"].color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
+        if(player_reset_timer>0){
+            player_reset_timer-=1;
+            if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
+                player_status=0;
+                objects["vishrectangle"].y=-270;
+                objects["vishrectangle"].x=-320;
+            }
+        }
+    }
+    if(mouse_clicked==1) {
         float angle=0;
         double mouse_x_cur;
         double mouse_y_cur;
