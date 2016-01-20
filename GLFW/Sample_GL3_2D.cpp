@@ -823,11 +823,19 @@ int checkCollision(string name, float dx, float dy){
                 col_object.x_speed/=(1+my_object.friction);
                 col_object.y_speed/=(1+my_object.friction);
                 collide=1;
+                if(abs(my_object.x_speed)<=2)
+                    my_object.x_speed=0;
+                if(abs(my_object.y_speed)<=2)
+                    my_object.y_speed=0;
+                if(abs(col_object.x_speed)<=2)
+                    col_object.x_speed=0;
+                if(abs(col_object.y_speed)<=2)
+                    col_object.y_speed=0;
             }
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
+            //col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
