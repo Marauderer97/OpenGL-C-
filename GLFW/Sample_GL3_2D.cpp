@@ -1167,7 +1167,13 @@ void draw (GLFWwindow* window)
             if(checkCollision(current,xShift,0)){
                 moveObject(current,-xShift,0);
             }
-            glm::mat4 rotateTriangle = glm::rotate((float)((objects[current].angle+rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+            glm::mat4 rotateTriangle;
+            if(objects[current].direction==1){
+                rotateTriangle = glm::rotate((float)((objects[current].angle-rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+            }
+            else if(objects[current].direction==0){
+                rotateTriangle = glm::rotate((float)((objects[current].angle+rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+            }
             if(objects[current].remAngle<=0){
                 if(rotationAngle<0){
                     rotateTriangle = glm::rotate((float)((objects[current].angle-90)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
@@ -1374,14 +1380,14 @@ void initGL (GLFWwindow* window, int width, int height)
 
     createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.3;
-    createRectangle("vishrectangle2",1,cratebrown,cratebrown,cratebrown,cratebrown,200,30,30,30,"");
-    createRectangle("vishrectangle3",1,cratebrown1,cratebrown1,cratebrown1,cratebrown1,200,60,30,30,"");
-    createRectangle("vishrectangle4",1,cratebrown2,cratebrown2,cratebrown2,cratebrown2,200,90,30,30,"");
-    createRectangle("vishrectangle5",1,cratebrown,cratebrown,cratebrown,cratebrown,200,120,30,30,"");
+    createRectangle("vishrectangle2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,30,30,30,"");
+    createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,60,30,30,"");
+    createRectangle("vishrectangle4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,90,30,30,"");
+    createRectangle("vishrectangle5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,120,30,30,"");
     createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
-    createRectangle("floor2",10000,darkgreen,darkgreen,darkgreen,darkgreen,0,-300,35,800,"");
+    createRectangle("floor2",10000,darkgreen,lightgreen,lightgreen,darkgreen,0,-290,20,800,"");
     objects["floor2"].fixed=1;
     objects["floor2"].friction=0.5;
     createRectangle("roof",10000,grey,grey,grey,grey,0,300,60,800,"");
