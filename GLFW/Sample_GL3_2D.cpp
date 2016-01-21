@@ -68,6 +68,7 @@ map <string, Sprite> cannonObjects; //Only store cannon components here
 map <string, Sprite> coins;
 map <string, Sprite> backgroundObjects;
 map <string, Sprite> goalObjects;
+map <string, Sprite> pig1Objects;
 
 float gravity = 1;
 float airResistance = 0.2/15;
@@ -571,6 +572,8 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         backgroundObjects[name]=vishsprite;
     else if(component=="goal")
         goalObjects[name]=vishsprite;
+    else if(component=="pig1")
+    	pig1Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -631,6 +634,8 @@ void createCircle (string name, float weight, COLOR color, float x, float y, flo
         backgroundObjects[name]=vishsprite;
     else if(component=="goal")
         goalObjects[name]=vishsprite;
+    else if(component=="pig1")
+    	pig1Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -835,7 +840,7 @@ int checkCollision(string name, float dx, float dy){
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            //col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
+            col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
@@ -1203,6 +1208,35 @@ void draw (GLFWwindow* window)
         //glPopMatrix ();
     }
 
+    //Draw the first pig (pig1)
+    for(map<string,Sprite>::iterator it=pig1Objects.begin();it!=pig1Objects.end();it++){
+        string current = it->first; //The name of the current object
+        if(objects["pig1"].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["pig1"].x+pig1Objects[current].x, objects["pig1"].y+pig1Objects[current].y, 0.0f)); // glTranslatef
+        triangleTransform=translateTriangle;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(pig1Objects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
     //Draw the cannon
     for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
         string current = it->first; //The name of the current object
@@ -1345,6 +1379,9 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR skyblue = {132/255.0,217/255.0,245/255.0};
     COLOR cloudwhite = {229/255.0,255/255.0,255/255.0};
     COLOR cloudwhite1 = {204/255.0,255/255.0,255/255.0};
+    COLOR lightpink = {255/255.0,122/255.0,173/255.0};
+    COLOR darkpink = {255/255.0,51/255.0,119/255.0};
+    COLOR white = {255/255.0,255/255.0,255/255.0};
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
@@ -1384,6 +1421,20 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,60,30,30,"");
     createRectangle("vishrectangle4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,90,30,30,"");
     createRectangle("vishrectangle5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,120,30,30,"");
+
+    createCircle("pig1",1,lightpink,320,-155,20,15,"",1);
+    createCircle("pig1ear1",1,lightpink,-17,13,7,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1ear2",1,lightpink,17,13,7,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    //createCircle("pig1ear2in",1,darkpink,17,14,4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eye1",1,white,-15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eye2",1,white,15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eyeball1",1,black,-13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eyeball2",1,black,13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+	createCircle("pig1nose",1,darkpink,0,-5,10,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+	createCircle("pig1nose1",1,darkbrown,2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+	createCircle("pig1nose2",1,darkbrown,-2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    
     createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
