@@ -69,6 +69,7 @@ map <string, Sprite> coins;
 map <string, Sprite> backgroundObjects;
 map <string, Sprite> goalObjects;
 map <string, Sprite> pig1Objects;
+map <string, Sprite> pig2Objects;
 
 float gravity = 1;
 float airResistance = 0.2/15;
@@ -574,6 +575,8 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         goalObjects[name]=vishsprite;
     else if(component=="pig1")
     	pig1Objects[name]=vishsprite;
+    else if(component=="pig2")
+    	pig2Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -636,6 +639,8 @@ void createCircle (string name, float weight, COLOR color, float x, float y, flo
         goalObjects[name]=vishsprite;
     else if(component=="pig1")
     	pig1Objects[name]=vishsprite;
+    else if(component=="pig2")
+    	pig2Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -840,7 +845,7 @@ int checkCollision(string name, float dx, float dy){
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            if(colliding!="pig1")
+            if(colliding!="pig1" && colliding!="pig2")
             	col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<=0){
                 col_object.health=0;
@@ -1228,6 +1233,42 @@ void draw (GLFWwindow* window)
         //glPopMatrix (); 
     }
 
+    //Draw the second pig (pig2)
+    for(map<string,Sprite>::iterator it=pig2Objects.begin();it!=pig2Objects.end();it++){
+        string current = it->first; //The name of the current object
+        if(objects["pig2"].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 triangleTransform;
+        float x_diff,y_diff;
+        x_diff=pig2Objects[current].x;
+        y_diff=pig2Objects[current].y;
+        glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["pig2"].x+pig2Objects[current].x, objects["pig2"].y+pig2Objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig2"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
+        Matrices.model *= triangleTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(pig2Objects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
+
     //Draw the cannon
     for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
         string current = it->first; //The name of the current object
@@ -1426,6 +1467,20 @@ void initGL (GLFWwindow* window, int width, int height)
 	createCircle("pig1nose1",1,darkbrown,2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
 	createCircle("pig1nose2",1,darkbrown,-2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     
+    createCircle("pig2",1,lightpink,335,-105,20,15,"",1);
+    createCircle("pig2ear1",1,lightpink,-17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2ear2",1,lightpink,17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    //createCircle("pig2ear1in",1,darkpink,-17,14,4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    //createCircle("pig2ear2in",1,darkpink,17,14,4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eye1",1,white,-15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eye2",1,white,15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eyeball1",1,black,-13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eyeball2",1,black,13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+	createCircle("pig2nose",1,darkpink,0,-5,10,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+	createCircle("pig2nose1",1,darkbrown,2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+	createCircle("pig2nose2",1,darkbrown,-2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    
+
     createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
     objects["floor"].friction=0.5;
