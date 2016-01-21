@@ -255,10 +255,6 @@ void draw3DObject (struct VAO* vao)
  **************************/
 
 int player_status=0; //0 is ready to play, 1 is not ready yet
-float triangle_rot_dir = 1;
-float rectangle_rot_dir = 1;
-bool triangle_rot_status = true;
-bool rectangle_rot_status = true;
 
 /* Executed when a regular key is pressed/released/held-down */
 /* Prefered for Keyboard events */
@@ -328,10 +324,8 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 }
                 break;
             case GLFW_KEY_C:
-                rectangle_rot_status = !rectangle_rot_status;
                 break;
             case GLFW_KEY_P:
-                triangle_rot_status = !triangle_rot_status;
                 break;
             case GLFW_KEY_X:
                 // do something ..
@@ -429,12 +423,10 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             }
             if (action == GLFW_RELEASE) {
                 mouse_release(window,button);
-                triangle_rot_dir *= -1;
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_RELEASE) {
-                rectangle_rot_dir *= -1;
             }
             break;
         default:
@@ -1031,10 +1023,10 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(backgroundObjects[current].x, backgroundObjects[current].y, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle;
-        Matrices.model *= triangleTransform;
+        glm::mat4 ObjectTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(backgroundObjects[current].x, backgroundObjects[current].y, 0.0f)); // glTranslatef
+        ObjectTransform=translateObject;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1060,14 +1052,14 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(coins[current].x, coins[current].y, 0.0f)); // glTranslatef
+        glm::mat4 ObjectTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(coins[current].x, coins[current].y, 0.0f)); // glTranslatef
         glm::mat4 rotateTriangle = glm::rotate((float)((0)*M_PI/180.0f), glm::vec3(0,1,0));  // rotate about vector (1,0,0)
         coins[current].angle=(coins[current].angle+1.0*time_delta);
         if(coins[current].angle>=360.0)
             coins[current].angle=0.0;
-        triangleTransform=translateTriangle*rotateTriangle;
-        Matrices.model *= triangleTransform;
+        ObjectTransform=translateObject*rotateTriangle;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1093,10 +1085,10 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(goalObjects[current].x, goalObjects[current].y, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle;
-        Matrices.model *= triangleTransform;
+        glm::mat4 ObjectTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(goalObjects[current].x, goalObjects[current].y, 0.0f)); // glTranslatef
+        ObjectTransform=translateObject;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1148,7 +1140,7 @@ void draw (GLFWwindow* window)
 
         /* Render your scene */
 
-        glm::mat4 triangleTransform;
+        glm::mat4 ObjectTransform;
 
         if(objects[current].isMovingAnim==1 && (current=="springbase2" || current=="springbase3")){
             if(objects[current].dy>0){
@@ -1188,10 +1180,10 @@ void draw (GLFWwindow* window)
                 objects[current].isRotating=0;
             }
         }
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
-        glm::mat4 rotateTriangleAct = glm::rotate((float)(objects[current].angle*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        triangleTransform=translateTriangle*rotateTriangleAct;
-        Matrices.model *= triangleTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 rotateObjectAct = glm::rotate((float)(objects[current].angle*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        ObjectTransform=translateObject*rotateObjectAct;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1217,16 +1209,16 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
+        glm::mat4 ObjectTransform;
         float x_diff,y_diff;
         x_diff=pig1Objects[current].x;
         y_diff=pig1Objects[current].y;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["pig1"].x+pig1Objects[current].x, objects["pig1"].y+pig1Objects[current].y, 0.0f)); // glTranslatef
-        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 translateObject = glm::translate (glm::vec3(objects["pig1"].x+pig1Objects[current].x, objects["pig1"].y+pig1Objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 translateObject1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
         glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig1"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
-        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
-        Matrices.model *= triangleTransform;
+        glm::mat4 translateObject2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        ObjectTransform=translateObject*translateObject1*rotateTriangle*translateObject2;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1252,16 +1244,16 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
+        glm::mat4 ObjectTransform;
         float x_diff,y_diff;
         x_diff=pig2Objects[current].x;
         y_diff=pig2Objects[current].y;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["pig2"].x+pig2Objects[current].x, objects["pig2"].y+pig2Objects[current].y, 0.0f)); // glTranslatef
-        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 translateObject = glm::translate (glm::vec3(objects["pig2"].x+pig2Objects[current].x, objects["pig2"].y+pig2Objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 translateObject1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
         glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig2"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
-        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
-        Matrices.model *= triangleTransform;
+        glm::mat4 translateObject2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        ObjectTransform=translateObject*translateObject1*rotateTriangle*translateObject2;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1303,16 +1295,16 @@ void draw (GLFWwindow* window)
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
-        glm::mat4 triangleTransform;
-        glm::mat4 translateTriangle = glm::translate (glm::vec3(cannonObjects[current].x, cannonObjects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 ObjectTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(cannonObjects[current].x, cannonObjects[current].y, 0.0f)); // glTranslatef
         float x_diff,y_diff;
         x_diff=abs(cannonObjects["cannoncircle"].x-cannonObjects[current].x);
         y_diff=abs(cannonObjects["cannoncircle"].y-cannonObjects[current].y);
-        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f)); // glTranslatef
+        glm::mat4 translateObject1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f)); // glTranslatef
         glm::mat4 rotateTriangle = glm::rotate((float)((cannonObjects[current].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
-        Matrices.model *= triangleTransform;
+        glm::mat4 translateObject2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f)); // glTranslatef
+        ObjectTransform=translateObject*translateObject1*rotateTriangle*translateObject2;
+        Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
         //  Don't change unless you are sure!!
@@ -1340,8 +1332,6 @@ void draw (GLFWwindow* window)
     float increments = 1;
 
     //camera_rotation_angle++; // Simulating camera rotation
-    triangle_rotation = triangle_rotation + increments*triangle_rot_dir*triangle_rot_status;
-    rectangle_rotation = rectangle_rotation + increments*rectangle_rot_dir*rectangle_rot_status;
 }
 
 /* Initialise glfw window, I/O callbacks and the renderer to use */
