@@ -840,7 +840,8 @@ int checkCollision(string name, float dx, float dy){
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
+            if(colliding!="pig1")
+            	col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
@@ -1161,41 +1162,25 @@ void draw (GLFWwindow* window)
         }
 
         if (objects[current].isRotating==1 && current!="vishrectangle"){
-            objects[current].remAngle-=7;
-            float rotationAngle = 90-objects[current].remAngle;
+            objects[current].remAngle-=9;
             float xShift = -0.5;
             if(objects[current].direction==0){
-                rotationAngle*=-1;
                 xShift*=-1;
+                objects[current].angle-=9;
             }
+            else
+            	objects[current].angle+=9;
             moveObject(current,xShift,0);
             if(checkCollision(current,xShift,0)){
                 moveObject(current,-xShift,0);
             }
-            glm::mat4 rotateTriangle;
-            if(objects[current].direction==1){
-                rotateTriangle = glm::rotate((float)((objects[current].angle-rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-            }
-            else if(objects[current].direction==0){
-                rotateTriangle = glm::rotate((float)((objects[current].angle+rotationAngle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-            }
             if(objects[current].remAngle<=0){
-                if(rotationAngle<0){
-                    rotateTriangle = glm::rotate((float)((objects[current].angle-90)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-                    objects[current].isRotating=0;
-                    objects[current].angle-=90;
-                }
-                else if(rotationAngle>0){
-                    rotateTriangle = glm::rotate((float)((objects[current].angle+90)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-                    objects[current].isRotating=0;
-                    objects[current].angle+=90;
-                }
+                objects[current].isRotating=0;
             }
-            triangleTransform=rotateTriangle;
         }
         glm::mat4 translateTriangle = glm::translate (glm::vec3(objects[current].x, objects[current].y, 0.0f)); // glTranslatef
         glm::mat4 rotateTriangleAct = glm::rotate((float)(objects[current].angle*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
-        triangleTransform=translateTriangle*triangleTransform*rotateTriangleAct;
+        triangleTransform=translateTriangle*rotateTriangleAct;
         Matrices.model *= triangleTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
@@ -1223,8 +1208,14 @@ void draw (GLFWwindow* window)
 
         /* Render your scene */
         glm::mat4 triangleTransform;
+        float x_diff,y_diff;
+        x_diff=pig1Objects[current].x;
+        y_diff=pig1Objects[current].y;
         glm::mat4 translateTriangle = glm::translate (glm::vec3(objects["pig1"].x+pig1Objects[current].x, objects["pig1"].y+pig1Objects[current].y, 0.0f)); // glTranslatef
-        triangleTransform=translateTriangle;
+        glm::mat4 translateTriangle1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig1"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateTriangle2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        triangleTransform=translateTriangle*translateTriangle1*rotateTriangle*translateTriangle2;
         Matrices.model *= triangleTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
