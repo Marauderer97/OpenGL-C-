@@ -845,8 +845,13 @@ int checkCollision(string name, float dx, float dy){
         }
         if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
-            if(colliding!="pig1" && colliding!="pig2")
-            	col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
+            col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
+            if(col_object.health<60){
+            	if(colliding=="pig1")
+            		pig1Objects["pig1eye1hurt"].status=1;
+            	else if(colliding=="pig2")
+            		pig2Objects["pig2eye2hurt"].status=1;
+            }
             if(col_object.health<=0){
                 col_object.health=0;
                 col_object.status=0;
@@ -1201,7 +1206,7 @@ void draw (GLFWwindow* window)
     //Draw the first pig (pig1)
     for(map<string,Sprite>::iterator it=pig1Objects.begin();it!=pig1Objects.end();it++){
         string current = it->first; //The name of the current object
-        if(objects["pig1"].status==0)
+        if(objects["pig1"].status==0 || pig1Objects[it->first].status==0)
             continue;
         // Send our transformation to the currently bound shader, in the "MVP" uniform
         // For each model you render, since the MVP will be different (at least the M part)
@@ -1236,7 +1241,7 @@ void draw (GLFWwindow* window)
     //Draw the second pig (pig2)
     for(map<string,Sprite>::iterator it=pig2Objects.begin();it!=pig2Objects.end();it++){
         string current = it->first; //The name of the current object
-        if(objects["pig2"].status==0)
+        if(objects["pig2"].status==0 || pig2Objects[it->first].status==0)
             continue;
         // Send our transformation to the currently bound shader, in the "MVP" uniform
         // For each model you render, since the MVP will be different (at least the M part)
@@ -1459,8 +1464,10 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("pig1ear2",1,lightpink,17,13,7,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     //createCircle("pig1ear2in",1,darkpink,17,14,4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-    createCircle("pig1eye1",1,white,-15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-    createCircle("pig1eye2",1,white,15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eye1main",1,white,-15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eye1hurt",1,darkbrown,-14,0,8,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1eye2main",1,white,15,0,5,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    pig1Objects["pig1eye1hurt"].status=0;
     createCircle("pig1eyeball1",1,black,-13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     createCircle("pig1eyeball2",1,black,13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
 	createCircle("pig1nose",1,darkpink,0,-5,10,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
@@ -1472,8 +1479,10 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("pig2ear2",1,lightpink,17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     //createCircle("pig2ear1in",1,darkpink,-17,14,4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     //createCircle("pig2ear2in",1,darkpink,17,14,4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
-    createCircle("pig2eye1",1,white,-15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
-    createCircle("pig2eye2",1,white,15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eye1main",1,white,-15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eye2main",1,white,15,0,5,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2eye2hurt",1,darkbrown,14,0,8,15,"pig2",1); //Store x and y offsets from pig1 as x,y here
+    pig2Objects["pig2eye2hurt"].status=0;
     createCircle("pig2eyeball1",1,black,-13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     createCircle("pig2eyeball2",1,black,13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
 	createCircle("pig2nose",1,darkpink,0,-5,10,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
