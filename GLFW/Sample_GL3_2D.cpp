@@ -309,8 +309,8 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                     player_status=1;
                     if(objects["vishrectangle"].inAir == 0){
                         objects["vishrectangle"].inAir = 1;
-                        objects["vishrectangle"].x = -320+cos(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
-                        objects["vishrectangle"].y = -240+sin(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                        objects["vishrectangle"].x = -315+cos(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                        objects["vishrectangle"].y = -210+sin(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
                         //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
                         //Also adjust the sensitivity of the mouse drag as required
                         objects["vishrectangle"].y_speed = min((abs(launch_power*10/89120)*sin(launch_angle*(M_PI/180))),30.0);
@@ -331,8 +331,8 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 // do something ..
                 break;
             case GLFW_KEY_R:
-                objects["vishrectangle"].y=-270;
-                objects["vishrectangle"].x=-320;
+                objects["vishrectangle"].y=-240;
+                objects["vishrectangle"].x=-315;
                 objects["vishrectangle"].inAir=0;
                 for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
                     string current = it->first; //The name of the current object
@@ -397,8 +397,8 @@ void mouse_release(GLFWwindow* window, int button){
         if(objects["vishrectangle"].inAir == 0){
             objects["vishrectangle"].inAir = 1;
             float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
-            objects["vishrectangle"].x = -320+cos(angle)*cannonObjects["cannonrectangle"].width;
-            objects["vishrectangle"].y = -240+sin(angle)*cannonObjects["cannonrectangle"].width;
+            objects["vishrectangle"].x = -315+cos(angle)*cannonObjects["cannonrectangle"].width;
+            objects["vishrectangle"].y = -210+sin(angle)*cannonObjects["cannonrectangle"].width;
             //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
             //Also adjust the sensitivity of the mouse drag as required
             click_time=glfwGetTime();
@@ -919,8 +919,8 @@ float cur_time; // Time in seconds
 void draw (GLFWwindow* window)
 {
     if(glfwGetTime()-click_time>=1.5){
-        objects["vishrectangle"].y=-270;
-        objects["vishrectangle"].x=-320;
+        objects["vishrectangle"].y=-240;
+        objects["vishrectangle"].x=-315;
         objects["vishrectangle"].inAir=0;
         for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
             string current = it->first; //The name of the current object
@@ -953,8 +953,8 @@ void draw (GLFWwindow* window)
             player_reset_timer-=1;
             if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
                 player_status=0;
-                objects["vishrectangle"].y=-270;
-                objects["vishrectangle"].x=-320;
+                objects["vishrectangle"].y=-240;
+                objects["vishrectangle"].x=-315;
             }
         }
     }
@@ -982,8 +982,8 @@ void draw (GLFWwindow* window)
         player_reset_timer-=1;
         if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
             player_status=0;
-            objects["vishrectangle"].y=-270;
-            objects["vishrectangle"].x=-320;
+            objects["vishrectangle"].y=-240;
+            objects["vishrectangle"].x=-315;
         }
     }
     // clear the color and depth in the frame buffer
@@ -1398,6 +1398,9 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR gold = {1,1,0};
     COLOR darkbrown = {46/255.0,46/255.0,31/255.0};
     COLOR lightbrown = {95/255.0,63/255.0,32/255.0};
+    COLOR brown1 = {117/255.0,78/255.0,40/255.0};
+    COLOR brown2 = {134/255.0,89/255.0,40/255.0};
+    COLOR brown3 = {46/255.0,46/255.0,31/255.0};
     COLOR cratebrown = {153/255.0,102/255.0,0/255.0};
     COLOR cratebrown1 = {121/255.0,85/255.0,0/255.0};
     COLOR cratebrown2 = {102/255.0,68/255.0,0/255.0};
@@ -1442,7 +1445,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("springbase3",10000,cratebrown,cratebrown,cratebrown,cratebrown,0,70,40,20,"");
     objects["springbase3"].fixed=1;
 
-    createCircle("vishrectangle",2,black,-320,-270,15,10,"",1); //Generate sprites
+    createCircle("vishrectangle",2,black,-315,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.3;
     createRectangle("vishrectangle2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,30,30,30,"");
     createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,60,30,30,"");
@@ -1496,14 +1499,25 @@ void initGL (GLFWwindow* window, int width, int height)
     objects["wall2"].fixed=1;
     objects["wall2"].friction=0.5;
 
-    createCircle("cannonaim",100000,darkbrown,-320,-240,150,12,"cannon",0);
+    createCircle("cannonaim",100000,darkbrown,-315,-210,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",100000,darkbrown,darkbrown,darkbrown,darkbrown,-250,-240,40,80,"cannon");
+    createRectangle("cannonrectangle",100000,darkbrown,darkbrown,darkbrown,darkbrown,-235,-210,40,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
-    createCircle("cannoncircle",100000,darkbrown,-320,-240,45,12,"cannon",1); 
+    createCircle("cannoncircle",100000,darkbrown,-315,-210,50,12,"cannon",1); 
     //The objects are drawn in the lexicographic ordering of their names
-    createCircle("cannoncircle2",100000,lightbrown,-320,-240,35,12,"cannon",1);
+    createCircle("cannoncircle2",100000,brown1,-315,-210,40,12,"cannon",1);
+
+    createCircle("cannonawheel2",100000,darkbrown,-315,-250,30,12,"cannon",1);
+    createCircle("cannonawheel22",100000,lightbrown,-315,-250,25,12,"cannon",1);
+    createCircle("cannonawheel222",100000,brown2,-315,-250,20,12,"cannon",1);
+    createCircle("cannonwheel1",100000,darkbrown,-295,-255,30,12,"cannon",1); 
+    createCircle("cannonwheel11",100000,lightbrown,-295,-255,25,12,"cannon",1);
+    createCircle("cannonwheel111",100000,brown2,-295,-255,20,12,"cannon",1);
+
+    createRectangle("cannonbase1",100000,brown3,brown3,brown3,brown3,-355,-270,20,27,"cannon");
+    createRectangle("cannonbase2",100000,brown3,brown3,brown3,brown3,-355,-245,30,20,"cannon");
+    cannonObjects["cannonbase2"].angle=-20;
 
     createCircle("coin1",100000,gold,320,-40,15,12,"coin",1);
     createCircle("coin2",100000,gold,20,-40,15,12,"coin",1);
