@@ -1107,8 +1107,8 @@ void draw (GLFWwindow* window)
                 objects[current].y=245;
                 objects[current].y_speed*=-1/2;
             }
-            if(objects[current].y<-270){
-                objects[current].y=-270;
+            if(objects[current].y<-265){
+                objects[current].y=-265;
                 objects[current].y_speed*=-1;
             }
         }
