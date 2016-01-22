@@ -71,6 +71,9 @@ map <string, Sprite> goalObjects;
 map <string, Sprite> pig1Objects;
 map <string, Sprite> pig2Objects;
 
+float x_change = 0; //For the camera pan
+float y_change = 0; //For the camera pan
+float zoom_camera = 1;
 float gravity = 1;
 float airResistance = 0.2/15;
 int player_reset_timer=0;
@@ -378,6 +381,7 @@ void keyboardChar (GLFWwindow* window, unsigned int key)
 }
 
 int mouse_clicked=0;
+int right_mouse_clicked=0;
 double mouse_x,mouse_y;
 double mouse_x_old,mouse_y_old;
 
@@ -413,6 +417,31 @@ void mouse_release(GLFWwindow* window, int button){
     }
 }
 
+void mousescroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+   if (yoffset==-1) { 
+       zoom_camera /= 1.1; //make it bigger than current size
+   }
+   else if(yoffset==1){
+       zoom_camera *= 1.1; //make it bigger than current size
+   }
+   if (zoom_camera<=1) {
+       zoom_camera = 1;
+   }
+   if (zoom_camera>=3) {
+       zoom_camera=3;
+   }
+   if(x_change-400.0f/zoom_camera<-400)
+		x_change=-400+400.0f/zoom_camera;
+    else if(x_change+400.0f/zoom_camera>400)
+		x_change=400-400.0f/zoom_camera;
+	if(y_change-300.0f/zoom_camera<-300)
+		y_change=-300+300.0f/zoom_camera;
+	else if(y_change+300.0f/zoom_camera>300)
+		y_change=300-300.0f/zoom_camera;
+   Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+}
+
 /* Executed when a mouse button is pressed/released */
 void mouseButton (GLFWwindow* window, int button, int action, int mods)
 {
@@ -426,7 +455,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
+        	if (action == GLFW_PRESS) {
+        		right_mouse_clicked=1;
+        	}
             if (action == GLFW_RELEASE) {
+            	right_mouse_clicked=0;
             }
             break;
         default:
@@ -458,7 +491,7 @@ void reshapeWindow (GLFWwindow* window, int width, int height)
     // Matrices.projection = glm::perspective (fov, (GLfloat) fbwidth / (GLfloat) fbheight, 0.1f, 500.0f);
 
     // Ortho projection for 2D views
-    Matrices.projection = glm::ortho(-400.0f, 400.0f, -300.0f, 300.0f, 0.1f, 500.0f);
+    Matrices.projection = glm::ortho(-400.0f/zoom_camera, 400.0f/zoom_camera, -300.0f/zoom_camera, 300.0f/zoom_camera, 0.1f, 500.0f);
 }
 
 
@@ -913,11 +946,31 @@ int checkCollisionSphere(string name,float dx, float dy){
 
 float old_time; // Time in seconds
 float cur_time; // Time in seconds
+double mouse_pos_x, mouse_pos_y;
+double new_mouse_pos_x, new_mouse_pos_y;
 
 /* Render the scene with openGL */
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
+	glfwGetCursorPos(window, &new_mouse_pos_x, &new_mouse_pos_y);
+	if(right_mouse_clicked==1){
+		x_change+=new_mouse_pos_x-mouse_pos_x;
+		y_change-=new_mouse_pos_y-mouse_pos_y;
+		if(x_change-400.0f/zoom_camera<-400)
+			x_change=-400+400.0f/zoom_camera;
+		else if(x_change+400.0f/zoom_camera>400)
+			x_change=400-400.0f/zoom_camera;
+		if(y_change-300.0f/zoom_camera<-300)
+			y_change=-300+300.0f/zoom_camera;
+		else if(y_change+300.0f/zoom_camera>300)
+			y_change=300-300.0f/zoom_camera;
+		Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+	}
+	else{
+		Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+	}
+	glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
     if(glfwGetTime()-click_time>=2){
         objects["vishrectangle"].y=-240;
         objects["vishrectangle"].x=-315;
@@ -1001,9 +1054,9 @@ void draw (GLFWwindow* window)
     glm::vec3 up (0, 1, 0);
 
     // Compute Camera matrix (view)
-    // Matrices.view = glm::lookAt( eye, target, up ); // Rotating Camera for 3D
+    //Matrices.view = glm::lookAt( eye, target, up ); // Rotating Camera for 3D
     //  Don't change unless you are sure!!
-    Matrices.view = glm::lookAt(glm::vec3(0,0,3), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
+    Matrices.view = glm::lookAt(glm::vec3(0,0,1), glm::vec3(0,0,0), glm::vec3(0,1,0)); // Fixed camera for 2D (ortho) in XY plane
 
     // Compute ViewProject matrix as view/camera might not be changed for this frame (basic scenario)
     //  Don't change unless you are sure!!
@@ -1378,6 +1431,7 @@ GLFWwindow* initGLFW (int width, int height)
 
     /* Register function to handle mouse click */
     glfwSetMouseButtonCallback(window, mouseButton);  // mouse button clicks
+    glfwSetScrollCallback(window, mousescroll); // mouse scroll
 
     return window;
 }
@@ -1556,6 +1610,8 @@ int main (int argc, char** argv)
     initGL (window, width, height);
 
     double last_update_time = glfwGetTime(), current_time;
+
+    glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
 
     old_time = glfwGetTime();
     /* Draw in loop */
