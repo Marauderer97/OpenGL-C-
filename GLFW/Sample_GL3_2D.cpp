@@ -918,7 +918,7 @@ float cur_time; // Time in seconds
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
-    if(glfwGetTime()-click_time>=1.5){
+    if(glfwGetTime()-click_time>=2){
         objects["vishrectangle"].y=-240;
         objects["vishrectangle"].x=-315;
         objects["vishrectangle"].inAir=0;
@@ -1501,7 +1501,7 @@ void initGL (GLFWwindow* window, int width, int height)
 
     createCircle("cannonaim",100000,darkbrown,-315,-210,150,12,"cannon",0);
     cannonObjects["cannonaim"].status=0;
-    createRectangle("cannonrectangle",100000,darkbrown,darkbrown,darkbrown,darkbrown,-235,-210,40,80,"cannon");
+    createRectangle("cannonrectangle",100000,darkbrown,darkbrown,darkbrown,darkbrown,-235,-210,50,80,"cannon");
     cannonObjects["cannonrectangle"].angle=45;
 
     createCircle("cannoncircle",100000,darkbrown,-315,-210,50,12,"cannon",1); 
