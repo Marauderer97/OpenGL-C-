@@ -314,7 +314,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                         //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
                         //Also adjust the sensitivity of the mouse drag as required
                         objects["vishrectangle"].y_speed = min((abs(launch_power*10/89120)*sin(launch_angle*(M_PI/180))),30.0);
-                        objects["vishrectangle"].x_speed = min((abs(launch_power*10/89120)*cos(launch_angle*(M_PI/180))),20.0);
+                        objects["vishrectangle"].x_speed = min((abs(launch_power*10/89120)*cos(launch_angle*(M_PI/180))),30.0);
                         for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
                             string current = it->first; //The name of the current object
                             cannonObjects[current].dx=16;
