@@ -70,6 +70,8 @@ map <string, Sprite> backgroundObjects;
 map <string, Sprite> goalObjects;
 map <string, Sprite> pig1Objects;
 map <string, Sprite> pig2Objects;
+map <string, Sprite> pig3Objects;
+map <string, Sprite> pig4Objects;
 
 int player_score=0;
 float x_change = 0; //For the camera pan
@@ -630,6 +632,10 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
     	pig1Objects[name]=vishsprite;
     else if(component=="pig2")
     	pig2Objects[name]=vishsprite;
+    else if(component=="pig3")
+    	pig3Objects[name]=vishsprite;
+    else if(component=="pig4")
+    	pig4Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -694,6 +700,10 @@ void createCircle (string name, float weight, COLOR color, float x, float y, flo
     	pig1Objects[name]=vishsprite;
     else if(component=="pig2")
     	pig2Objects[name]=vishsprite;
+    else if(component=="pig3")
+    	pig3Objects[name]=vishsprite;
+    else if(component=="pig4")
+    	pig4Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -884,11 +894,15 @@ int checkCollision(string name, float dx, float dy){
             		pig1Objects["pig1eye1hurt"].status=1;
             	else if(colliding=="pig2")
             		pig2Objects["pig2eye2hurt"].status=1;
+            	else if(colliding=="pig3")
+            		pig3Objects["pig3eye1hurt"].status=1;
+            	else if(colliding=="pig4")
+            		pig4Objects["pig4eye1hurt"].status=1;
             }
             if(col_object.health<=0){
                 col_object.health=0;
                 player_score+=50;
-                if(colliding=="pig1" || colliding=="pig2")
+                if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4")
                 	player_score+=50;
                 cout << player_score << endl;
                 col_object.status=0;
@@ -1209,8 +1223,8 @@ void draw (GLFWwindow* window)
                 float dy=objects[current].dy;
                 float y=objects[current].y;
                 if(current=="springbase3"){
-                    COLOR my_color = objects["springbase3"].color;
-                    createRectangle("springbase3",10000,my_color,my_color,my_color,my_color,0,objects["springbase3"].y,objects["springbase3"].height-1,20,"");
+                    COLOR my_color = objects["springbase3"].color;	
+                    createRectangle("springbase3",10000,my_color,my_color,my_color,my_color,190,objects["springbase3"].y,objects["springbase3"].height-1,20,"");
                     objects["springbase3"].fixed=1;
                     y+=1/2.0;
                     objects["springbase3"].isMovingAnim=1;
@@ -1219,6 +1233,8 @@ void draw (GLFWwindow* window)
                 objects[current].y=y-1;
                 if(objects[current].dy==0){
                     goalObjects["goal1"].status=1;
+                    goalObjects["goal2"].status=1;
+                    goalObjects["goal3"].status=1;
                     objects[current].isMovingAnim=2;
                     objects["springbase1"].isMovingAnim=2; //To activate the goal, check for the status of the springbase1,2 or 3 if its equal to 2
                 }
@@ -1327,6 +1343,75 @@ void draw (GLFWwindow* window)
         //glPopMatrix (); 
     }
 
+    //Draw the third pig (pig3)
+    for(map<string,Sprite>::iterator it=pig3Objects.begin();it!=pig3Objects.end();it++){
+        string current = it->first; //The name of the current object
+        if(objects["pig3"].status==0 || pig3Objects[it->first].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 ObjectTransform;
+        float x_diff,y_diff;
+        x_diff=pig3Objects[current].x;
+        y_diff=pig3Objects[current].y;
+        glm::mat4 translateObject = glm::translate (glm::vec3(objects["pig3"].x+pig3Objects[current].x, objects["pig3"].y+pig3Objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 translateObject1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig3"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateObject2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        ObjectTransform=translateObject*translateObject1*rotateTriangle*translateObject2;
+        Matrices.model *= ObjectTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(pig3Objects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
+
+    //Draw the fourth pig (pig4)
+    for(map<string,Sprite>::iterator it=pig4Objects.begin();it!=pig4Objects.end();it++){
+        string current = it->first; //The name of the current object
+        if(objects["pig4"].status==0 || pig4Objects[it->first].status==0)
+            continue;
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // For each model you render, since the MVP will be different (at least the M part)
+        //  Don't change unless you are sure!!
+        glm::mat4 MVP;  // MVP = Projection * View * Model
+
+        // Load identity to model matrix
+        Matrices.model = glm::mat4(1.0f);
+
+        /* Render your scene */
+        glm::mat4 ObjectTransform;
+        float x_diff,y_diff;
+        x_diff=pig4Objects[current].x;
+        y_diff=pig4Objects[current].y;
+        glm::mat4 translateObject = glm::translate (glm::vec3(objects["pig4"].x+pig4Objects[current].x, objects["pig4"].y+pig4Objects[current].y, 0.0f)); // glTranslatef
+        glm::mat4 translateObject1 = glm::translate (glm::vec3(-x_diff, -y_diff, 0.0f));
+        glm::mat4 rotateTriangle = glm::rotate((float)((objects["pig4"].angle)*M_PI/180.0f), glm::vec3(0,0,1));  // rotate about vector (1,0,0)
+        glm::mat4 translateObject2 = glm::translate (glm::vec3(x_diff, y_diff, 0.0f));
+        ObjectTransform=translateObject*translateObject1*rotateTriangle*translateObject2;
+        Matrices.model *= ObjectTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+
+        //  Don't change unless you are sure!!
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+        // draw3DObject draws the VAO given to it using current MVP matrix
+        draw3DObject(pig4Objects[current].object);
+        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+        //glPopMatrix (); 
+    }
 
     //Draw the cannon
     for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
@@ -1499,21 +1584,35 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cannonpower2",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-270,250,25,160,"background");
     createRectangle("cannonpowerdisplay",10000,red,red,red,red,-270,250,25,0,"background");
 
-    createRectangle("skyfloor1",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-10,30,20,100,"");
+    createRectangle("skyfloor1",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,190,30,20,100,"");
     objects["skyfloor1"].fixed=1;
-    createRectangle("springbase1",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,0,50,20,40,"");
+    createRectangle("skyfloor2",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,230,60,60,20,"");
+    objects["skyfloor2"].fixed=1;
+    createRectangle("skyfloor3",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,270,90,20,100,"");
+    objects["skyfloor3"].fixed=1;
+    createRectangle("springbase1",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,190,50,20,40,"");
     objects["springbase1"].fixed=1;
-    createRectangle("springbase2",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,0,90,20,40,"");
+    createRectangle("springbase2",10000,cratebrown2,cratebrown2,cratebrown2,cratebrown2,190,90,20,40,"");
     objects["springbase2"].fixed=1;
-    createRectangle("springbase3",10000,cratebrown,cratebrown,cratebrown,cratebrown,0,70,40,20,"");
+    createRectangle("springbase3",10000,cratebrown,cratebrown,cratebrown,cratebrown,190,70,40,20,"");
     objects["springbase3"].fixed=1;
+
+    createRectangle("groundfloor1",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-50,-260,20,20,"");
+    objects["groundfloor1"].fixed=1;
+    createRectangle("groundfloor2",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,-10,-240,20,100,"");
+    objects["groundfloor2"].fixed=1;
+    createRectangle("groundfloor3",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,30,-260,20,20,"");
+    objects["groundfloor3"].fixed=1;
 
     createCircle("vishrectangle",2,black,-315,-270,15,10,"",1); //Generate sprites
     objects["vishrectangle"].friction=0.3;
-    createRectangle("vishrectangle2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,30,30,30,"");
-    createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,60,30,30,"");
-    createRectangle("vishrectangle4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,90,30,30,"");
-    createRectangle("vishrectangle5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,200,120,30,30,"");
+    createRectangle("vishrectangle2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-100,60,60,"");
+    createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-160,30,30,"");
+    createRectangle("vishrectangle4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-190,30,30,"");
+    createRectangle("vishrectangle5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-220,30,30,"");
+
+    //On the skyfloor
+    createRectangle("vishrectangle6",1,cratebrown,cratebrown2,cratebrown2,cratebrown,270,140,40,40,"");
 
     createCircle("pig1",1,lightpink,320,-155,20,15,"",1);
     createCircle("pig1ear1",1,lightpink,-17,13,7,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
@@ -1530,7 +1629,7 @@ void initGL (GLFWwindow* window, int width, int height)
 	createCircle("pig1nose1",1,darkbrown,2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
 	createCircle("pig1nose2",1,darkbrown,-2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     
-    createCircle("pig2",1,lightpink,335,-105,20,15,"",1);
+    createCircle("pig2",1,lightpink,0,-150,20,15,"",1);
     createCircle("pig2ear1",1,lightpink,-17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     createCircle("pig2ear2",1,lightpink,17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     //createCircle("pig2ear1in",1,darkpink,-17,14,4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
@@ -1544,6 +1643,36 @@ void initGL (GLFWwindow* window, int width, int height)
 	createCircle("pig2nose",1,darkpink,0,-5,10,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
 	createCircle("pig2nose1",1,darkbrown,2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
 	createCircle("pig2nose2",1,darkbrown,-2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+
+	createCircle("pig3",1,lightpink,270,255,20,15,"",1);
+    createCircle("pig3ear1",1,lightpink,-17,13,7,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3ear2",1,lightpink,17,13,7,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig3 as x,y here
+    //createCircle("pig1ear2in",1,darkpink,17,14,4,15,"pig1",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3eye1main",1,white,-15,0,5,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3eye1hurt",1,darkbrown,-14,0,8,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3eye2main",1,white,15,0,5,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    pig3Objects["pig3eye1hurt"].status=0;
+    createCircle("pig3eyeball1",1,black,-13,0,2,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3eyeball2",1,black,13,0,2,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+	createCircle("pig3nose",1,darkpink,0,-5,10,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+	createCircle("pig3nose1",1,darkbrown,2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+	createCircle("pig3nose2",1,darkbrown,-2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+
+	createCircle("pig4",1,lightpink,160,0,20,15,"",1);
+    createCircle("pig4ear1",1,lightpink,-17,13,7,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4ear2",1,lightpink,17,13,7,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig4 as x,y here
+    //createCircle("pig1ear2in",1,darkpink,17,14,4,15,"pig1",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4eye1main",1,white,-15,0,5,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4eye1hurt",1,darkbrown,-14,0,8,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4eye2main",1,white,15,0,5,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    pig4Objects["pig4eye1hurt"].status=0;
+    createCircle("pig4eyeball1",1,black,-13,0,2,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4eyeball2",1,black,13,0,2,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+	createCircle("pig4nose",1,darkpink,0,-5,10,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+	createCircle("pig4nose1",1,darkbrown,2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+	createCircle("pig4nose2",1,darkbrown,-2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
     
 
     createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
@@ -1587,6 +1716,10 @@ void initGL (GLFWwindow* window, int width, int height)
 
     createCircle("goal1",100000,darkgreen,130,-40,15,15,"goal",1);
     goalObjects["goal1"].status=0;
+    createCircle("goal2",100000,darkgreen,-120,150,15,15,"goal",1);
+    goalObjects["goal2"].status=0;
+    createCircle("goal3",100000,darkgreen,-320,0,15,15,"goal",1);
+    goalObjects["goal3"].status=0;
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
