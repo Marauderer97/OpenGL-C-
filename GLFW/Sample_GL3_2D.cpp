@@ -1158,8 +1158,8 @@ void draw (GLFWwindow* window)
     for(map<string,Sprite>::iterator it=objects.begin();it!=objects.end();it++){
         string current = it->first; //The name of the current object
         if(current!="floor" && current!="floor2" && current!="roof" && current!="wall1" && current!="wall2"){
-            if(objects[current].y>245){
-                objects[current].y=245;
+            if(objects[current].y>250){
+                objects[current].y=250;
                 objects[current].y_speed*=-1/2;
             }
             if(objects[current].y<-265){
@@ -1170,7 +1170,14 @@ void draw (GLFWwindow* window)
         if(objects[current].status==0)
             continue;
         if(objects[current].fixed==0 && objects[current].y_speed==0){
-            if(!checkCollision(current,0,0)){
+        	moveObject(current,0,-2);
+        	int col_state=0;
+        	for(map<string,Sprite>::iterator it3=objects.begin();it3!=objects.end();it3++){
+        		if(checkCollisionBottom(it3->second,objects[current]))
+        			col_state=1;
+        	}
+        	moveObject(current,0,2);
+            if(col_state==0){
                 objects[current].inAir=1;
             }
         }
