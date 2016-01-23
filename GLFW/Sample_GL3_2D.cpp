@@ -265,12 +265,64 @@ double launch_power=0;
 double launch_angle=0;
 int keyboard_pressed=0;
 
+void mousescroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+   if (yoffset==-1) { 
+       zoom_camera /= 1.1; //make it bigger than current size
+   }
+   else if(yoffset==1){
+       zoom_camera *= 1.1; //make it bigger than current size
+   }
+   if (zoom_camera<=1) {
+       zoom_camera = 1;
+   }
+   if (zoom_camera>=4) {
+       zoom_camera=4;
+   }
+   if(x_change-400.0f/zoom_camera<-400)
+		x_change=-400+400.0f/zoom_camera;
+    else if(x_change+400.0f/zoom_camera>400)
+		x_change=400-400.0f/zoom_camera;
+	if(y_change-300.0f/zoom_camera<-300)
+		y_change=-300+300.0f/zoom_camera;
+	else if(y_change+300.0f/zoom_camera>300)
+		y_change=300-300.0f/zoom_camera;
+   Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+}
+
+void check_pan(){
+	if(x_change-400.0f/zoom_camera<-400)
+		x_change=-400+400.0f/zoom_camera;
+	else if(x_change+400.0f/zoom_camera>400)
+		x_change=400-400.0f/zoom_camera;
+	if(y_change-300.0f/zoom_camera<-300)
+		y_change=-300+300.0f/zoom_camera;
+	else if(y_change+300.0f/zoom_camera>300)
+		y_change=300-300.0f/zoom_camera;
+}
+
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     // Function is called first on GLFW_PRESS.
 
     if (action == GLFW_RELEASE) {
         switch (key) {
+        	case GLFW_KEY_UP:
+        		mousescroll(window,0,+1);
+        		check_pan();
+        		break;
+        	case GLFW_KEY_DOWN:
+        		mousescroll(window,0,-1);
+        		check_pan();
+        		break;
+        	case GLFW_KEY_RIGHT:
+        		x_change+=10;
+        		check_pan();
+        		break;
+        	case GLFW_KEY_LEFT:
+        		x_change-=10;
+        		check_pan();
+        		break;
             case GLFW_KEY_Y:
                 if(launch_power>(760*760+560*560)/10)
                     launch_power-=(760*760+560*560)/10;
@@ -415,31 +467,6 @@ void mouse_release(GLFWwindow* window, int button){
             }
         }
     }
-}
-
-void mousescroll(GLFWwindow* window, double xoffset, double yoffset)
-{
-   if (yoffset==-1) { 
-       zoom_camera /= 1.1; //make it bigger than current size
-   }
-   else if(yoffset==1){
-       zoom_camera *= 1.1; //make it bigger than current size
-   }
-   if (zoom_camera<=1) {
-       zoom_camera = 1;
-   }
-   if (zoom_camera>=3) {
-       zoom_camera=3;
-   }
-   if(x_change-400.0f/zoom_camera<-400)
-		x_change=-400+400.0f/zoom_camera;
-    else if(x_change+400.0f/zoom_camera>400)
-		x_change=400-400.0f/zoom_camera;
-	if(y_change-300.0f/zoom_camera<-300)
-		y_change=-300+300.0f/zoom_camera;
-	else if(y_change+300.0f/zoom_camera>300)
-		y_change=300-300.0f/zoom_camera;
-   Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
 }
 
 /* Executed when a mouse button is pressed/released */
@@ -957,19 +984,9 @@ void draw (GLFWwindow* window)
 	if(right_mouse_clicked==1){
 		x_change+=new_mouse_pos_x-mouse_pos_x;
 		y_change-=new_mouse_pos_y-mouse_pos_y;
-		if(x_change-400.0f/zoom_camera<-400)
-			x_change=-400+400.0f/zoom_camera;
-		else if(x_change+400.0f/zoom_camera>400)
-			x_change=400-400.0f/zoom_camera;
-		if(y_change-300.0f/zoom_camera<-300)
-			y_change=-300+300.0f/zoom_camera;
-		else if(y_change+300.0f/zoom_camera>300)
-			y_change=300-300.0f/zoom_camera;
-		Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+		check_pan();
 	}
-	else{
-		Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
-	}
+	Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
 	glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
     if(glfwGetTime()-click_time>=2){
         objects["vishrectangle"].y=-240;
