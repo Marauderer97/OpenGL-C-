@@ -1187,7 +1187,9 @@ void draw (GLFWwindow* window)
         	moveObject(current,0,-2);
         	int col_state=0;
         	for(map<string,Sprite>::iterator it3=objects.begin();it3!=objects.end();it3++){
-        		if(checkCollisionBottom(it3->second,objects[current]))
+        		if(it3->second.status==0)
+                    continue;
+                if(checkCollisionBottom(it3->second,objects[current]))
         			col_state=1;
         	}
         	moveObject(current,0,2);
