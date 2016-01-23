@@ -71,6 +71,7 @@ map <string, Sprite> goalObjects;
 map <string, Sprite> pig1Objects;
 map <string, Sprite> pig2Objects;
 
+int player_score=0;
 float x_change = 0; //For the camera pan
 float y_change = 0; //For the camera pan
 float zoom_camera = 1;
@@ -749,21 +750,11 @@ int checkCollision(string name, float dx, float dy){
             Sprite my_object=objects["vishrectangle"];
             if(col_object.status==0)
                 continue;
-            if(dx>0 && checkCollisionRight(col_object,my_object)){
+            if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
                 coins[it2->first].status=0;
                 cout <<" COIN " << endl;
-            }
-            if(dx<0 && checkCollisionLeft(col_object,my_object)){
-                coins[it2->first].status=0;
-                cout <<" COIN " << endl;
-            }
-            if(dy>0 && checkCollisionTop(col_object,my_object)){
-                coins[it2->first].status=0;
-                cout <<" COIN " << endl; 
-            }
-            if(dy<0 && checkCollisionBottom(col_object,my_object)){
-                coins[it2->first].status=0;
-                cout <<" COIN " << endl; 
+                player_score+=100;
+                cout << player_score << endl;
             }
         }
         for(map<string,Sprite>::iterator it2=goalObjects.begin();it2!=goalObjects.end();it2++){
@@ -771,21 +762,11 @@ int checkCollision(string name, float dx, float dy){
             Sprite my_object=objects["vishrectangle"];
             if(col_object.status==0)
                 continue;
-            if(dx>0 && checkCollisionRight(col_object,my_object)){
+            if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
                 goalObjects[it2->first].status=0;
-                cout <<" GOAL OBTAINED " << endl;
-            }
-            if(dx<0 && checkCollisionLeft(col_object,my_object)){
-                goalObjects[it2->first].status=0;
-                cout <<" GOAL OBTAINED " << endl;
-            }
-            if(dy>0 && checkCollisionTop(col_object,my_object)){
-                goalObjects[it2->first].status=0;
-                cout <<" GOAL OBTAINED " << endl; 
-            }
-            if(dy<0 && checkCollisionBottom(col_object,my_object)){
-                goalObjects[it2->first].status=0;
-                cout <<" GOAL OBTAINED " << endl; 
+                cout <<" GOAL OBTAINED, YOU WIN! " << endl;
+                player_score+=200;
+                cout << player_score << endl;
             }
         }
     }
@@ -906,6 +887,10 @@ int checkCollision(string name, float dx, float dy){
             }
             if(col_object.health<=0){
                 col_object.health=0;
+                player_score+=50;
+                if(colliding=="pig1" || colliding=="pig2")
+                	player_score+=50;
+                cout << player_score << endl;
                 col_object.status=0;
             }
         }
