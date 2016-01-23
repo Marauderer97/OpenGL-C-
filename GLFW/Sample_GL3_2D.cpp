@@ -323,25 +323,25 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
         		x_change-=10;
         		check_pan();
         		break;
-            case GLFW_KEY_Y:
+            case GLFW_KEY_S:
                 if(launch_power>(760*760+560*560)/10)
                     launch_power-=(760*760+560*560)/10;
                 else
                     launch_power=0;
                 break;
-            case GLFW_KEY_I:
+            case GLFW_KEY_F:
                 if(launch_power<760*760+560*560-(760*760+560*560)/10)
                     launch_power+=(760*760+560*560)/10;
                 else
                     launch_power=760*760+560*560;
                 break;
-            case GLFW_KEY_H:
+            case GLFW_KEY_A:
                 if(launch_angle<90-10)
                     launch_angle+=10;
                 else
                     launch_angle=90;
                 break;
-            case GLFW_KEY_K:
+            case GLFW_KEY_B:
                 if(launch_angle>10)
                     launch_angle-=10;
                 else
@@ -354,7 +354,7 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 backgroundObjects["cannonpowerdisplay"].status=1;
                 launch_power=(760*760+560*560)/10;
                 break;
-            case GLFW_KEY_J:
+            case GLFW_KEY_SPACE:
                 cout << "END KEYBOARD" << endl;
                 click_time=glfwGetTime();
                 keyboard_pressed=0;
