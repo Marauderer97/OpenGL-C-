@@ -1633,10 +1633,10 @@ void initGL (GLFWwindow* window, int width, int height)
     characters[2]=&char3Objects;
     characters[3]=&char4Objects;
 
-    characterPosX[0]=200;
-    characterPosX[1]=220;
-    characterPosX[2]=240;
-    characterPosX[3]=260;
+    characterPosX[0]=280;
+    characterPosX[1]=300;
+    characterPosX[2]=320;
+    characterPosX[3]=340;
 
     characterPosY[0]=250;
     characterPosY[1]=250;
@@ -1666,6 +1666,7 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR lightpink = {255/255.0,122/255.0,173/255.0};
     COLOR darkpink = {255/255.0,51/255.0,119/255.0};
     COLOR white = {255/255.0,255/255.0,255/255.0};
+    COLOR score = {117/255.0,78/255.0,40/255.0};
 
     //float x[] = {0.0,0.0,1.0};
     //float y[] = {0.0,1.0,1.0};
@@ -1827,7 +1828,7 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("goal3",100000,darkgreen,-320,0,15,15,"goal",1);
     goalObjects["goal3"].status=0;
 
-    //Texts
+    //Render the characters for the score
     int t;
     for(t=1;t<=4;t++){
         string layer;
@@ -1839,13 +1840,13 @@ void initGL (GLFWwindow* window, int width, int height)
             layer="char3";
         if(t==4)
             layer="char4";
-        createRectangle("top",100000,brown3,brown3,brown3,brown3,0,10,2,10,layer);
-        createRectangle("bottom",100000,brown3,brown3,brown3,brown3,0,-10,2,10,layer);
-        createRectangle("middle",100000,brown3,brown3,brown3,brown3,0,0,2,10,layer);
-        createRectangle("left1",100000,brown3,brown3,brown3,brown3,-5,5,10,2,layer);
-        createRectangle("left2",100000,brown3,brown3,brown3,brown3,-5,-5,10,2,layer);
-        createRectangle("right1",100000,brown3,brown3,brown3,brown3,5,5,10,2,layer);
-        createRectangle("right2",100000,brown3,brown3,brown3,brown3,5,-5,10,2,layer);
+        createRectangle("top",100000,score,score,score,score,0,10,4,12,layer);
+        createRectangle("bottom",100000,score,score,score,score,0,-10,4,12,layer);
+        createRectangle("middle",100000,score,score,score,score,0,0,4,12,layer);
+        createRectangle("left1",100000,score,score,score,score,-5,5,12,4,layer);
+        createRectangle("left2",100000,score,score,score,score,-5,-5,12,4,layer);
+        createRectangle("right1",100000,score,score,score,score,5,5,12,4,layer);
+        createRectangle("right2",100000,score,score,score,score,5,-5,12,4,layer);
     }
 
     // Create and compile our GLSL program from the shaders
