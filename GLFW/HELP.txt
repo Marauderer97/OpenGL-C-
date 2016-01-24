@@ -1,0 +1,19 @@
+Controls:
+
+Mouse:
+1)Scroll up/down to zoom in and zoom out
+2)Right click and drag to pan the scene
+3)Left click anywhere on the screen to get the cannon ready, and release to launch a cannonball
+
+Keyboard:
+1)'R' to reset the cannonball so it can be launched again if you are in a hurry
+2)'UP' to zoom in
+3)'DOWN' to zoom out
+4)'RIGHT' to pan right
+5)'LEFT' to pan left
+6)'U' to start controlling the cannon with the keyboard
+7)'SPACE' to launch the cannon
+8)'S' to decrease the launch power
+9)'F' to increase the launch power
+10)'A' to increase the launch angle
+11)'B' to decrease the launch angle
