@@ -11,9 +11,8 @@ Keyboard:
 3)'DOWN' to zoom out
 4)'RIGHT' to pan right
 5)'LEFT' to pan left
-6)'U' to start controlling the cannon with the keyboard
-7)'SPACE' to launch the cannon
-8)'S' to decrease the launch power
-9)'F' to increase the launch power
-10)'A' to increase the launch angle
-11)'B' to decrease the launch angle
+6)'SPACE' to launch the cannon
+7)'S' to decrease the launch power
+8)'F' to increase the launch power
+9)'A' to increase the launch angle
+10)'B' to decrease the launch angle

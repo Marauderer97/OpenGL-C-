@@ -304,6 +304,16 @@ void check_pan(){
 		y_change=300-300.0f/zoom_camera;
 }
 
+void initKeyboard(){
+    if(keyboard_pressed==0){
+        cout << "START KEYBOARD" << endl;
+        keyboard_pressed=1;
+        cannonObjects["cannonaim"].status=1;
+        backgroundObjects["cannonpowerdisplay"].status=1;
+        launch_power=(760*760+560*560)/10;
+    }
+}
+
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     // Function is called first on GLFW_PRESS.
@@ -327,35 +337,32 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
         		check_pan();
         		break;
             case GLFW_KEY_S:
+                initKeyboard();
                 if(launch_power>(760*760+560*560)/10)
                     launch_power-=(760*760+560*560)/10;
                 else
                     launch_power=0;
                 break;
             case GLFW_KEY_F:
+                initKeyboard();
                 if(launch_power<760*760+560*560-(760*760+560*560)/10)
                     launch_power+=(760*760+560*560)/10;
                 else
                     launch_power=760*760+560*560;
                 break;
             case GLFW_KEY_A:
+                initKeyboard();
                 if(launch_angle<90-10)
                     launch_angle+=10;
                 else
                     launch_angle=90;
                 break;
             case GLFW_KEY_B:
+                initKeyboard();
                 if(launch_angle>10)
                     launch_angle-=10;
                 else
                     launch_angle=0;
-                break;
-            case GLFW_KEY_U:
-                cout << "START KEYBOARD" << endl;
-                keyboard_pressed=1;
-                cannonObjects["cannonaim"].status=1;
-                backgroundObjects["cannonpowerdisplay"].status=1;
-                launch_power=(760*760+560*560)/10;
                 break;
             case GLFW_KEY_SPACE:
                 cout << "END KEYBOARD" << endl;
@@ -442,6 +449,7 @@ double mouse_x_old,mouse_y_old;
 
 void mouse_click(){
     mouse_clicked=1;
+    keyboard_pressed=0;
     cannonObjects["cannonaim"].status=1;
     backgroundObjects["cannonpowerdisplay"].status=1;
 }
