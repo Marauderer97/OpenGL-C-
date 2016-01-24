@@ -72,6 +72,15 @@ map <string, Sprite> pig1Objects;
 map <string, Sprite> pig2Objects;
 map <string, Sprite> pig3Objects;
 map <string, Sprite> pig4Objects;
+map <string, Sprite> char1Objects;
+map <string, Sprite> char2Objects;
+map <string, Sprite> char3Objects;
+map <string, Sprite> char4Objects;
+
+map <string, Sprite> *characters[4];
+char characterValues[4];
+float characterPosX[4];
+float characterPosY[4];
 
 int player_score=0;
 float x_change = 0; //For the camera pan
@@ -644,6 +653,14 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         pig3Objects[name]=vishsprite;
     else if(component=="pig4")
         pig4Objects[name]=vishsprite;
+    else if(component=="char1")
+        char1Objects[name]=vishsprite;
+    else if(component=="char2")
+        char2Objects[name]=vishsprite;
+    else if(component=="char3")
+        char3Objects[name]=vishsprite;
+    else if(component=="char4")
+        char4Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -772,7 +789,6 @@ int checkCollision(string name, float dx, float dy){
                 coins[it2->first].status=0;
                 cout <<" COIN " << endl;
                 player_score+=100;
-                cout << player_score << endl;
             }
         }
         for(map<string,Sprite>::iterator it2=goalObjects.begin();it2!=goalObjects.end();it2++){
@@ -784,7 +800,6 @@ int checkCollision(string name, float dx, float dy){
                 goalObjects[it2->first].status=0;
                 cout <<" GOAL OBTAINED, YOU WIN! " << endl;
                 player_score+=200;
-                cout << player_score << endl;
             }
         }
     }
@@ -912,7 +927,6 @@ int checkCollision(string name, float dx, float dy){
                 player_score+=50;
                 if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4")
                     player_score+=50;
-                cout << player_score << endl;
                 col_object.status=0;
             }
         }
@@ -978,6 +992,39 @@ int checkCollisionSphere(string name,float dx, float dy){
 }
 
 
+void setStrokes(char val, int charNo, map<string,Sprite> curChar){
+    curChar["top"].status=0;
+    curChar["bottom"].status=0;
+    curChar["middle"].status=0;
+    curChar["left1"].status=0;
+    curChar["left2"].status=0;
+    curChar["right1"].status=0;
+    curChar["right2"].status=0;
+    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6'|| val=='7' || val=='8' || val=='9'){
+        curChar["top"].status=1;
+    }
+    if(val=='2' || val=='3' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9'){
+        curChar["middle"].status=1;
+    }
+    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6' || val=='8' || val=='9'){
+        curChar["bottom"].status=1;
+    }
+    if(val=='0' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9'){
+        curChar["left1"].status=1;
+    }
+    if(val=='0' || val=='2' || val=='6' || val=='8'){
+        curChar["left2"].status=1;
+    }
+    if(val=='0' || val=='1' || val=='2' || val=='3' || val=='4' || val=='7' || val=='8' || val=='9'){
+        curChar["right1"].status=1;
+    }
+    if(val=='0' || val=='1' || val=='3' || val=='4' || val=='5' || val=='6' || val=='7' || val=='8' || val=='9'){
+        curChar["right2"].status=1;
+    }
+    *characters[charNo]=curChar;
+}
+
+
 float old_time; // Time in seconds
 float cur_time; // Time in seconds
 double mouse_pos_x, mouse_pos_y;
@@ -987,6 +1034,19 @@ double new_mouse_pos_x, new_mouse_pos_y;
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
+    characterValues[0]='.';
+    characterValues[1]='.';
+    characterValues[2]='.';
+    characterValues[3]='.';
+    int cur_score = player_score;
+    int start=0;
+    if(cur_score==0)
+        characterValues[3]='0';
+    while(cur_score){
+        characterValues[3-start]=(cur_score)%10+'0';
+        cur_score/=10;
+        start++;
+    }
     glfwGetCursorPos(window, &new_mouse_pos_x, &new_mouse_pos_y);
     if(right_mouse_clicked==1){
         x_change+=new_mouse_pos_x-mouse_pos_x;
@@ -1473,21 +1533,42 @@ void draw (GLFWwindow* window)
         //glPopMatrix (); 
     }
 
+    //Draw the characters
+    int t;
+    for(t=0;t<4;t++){
+        map <string, Sprite> charCurrent = *characters[t];
+        float base_x = characterPosX[t];
+        float base_y = characterPosY[t];
+        char charValue = characterValues[t];
+        setStrokes(charValue, t, charCurrent);
+        for(map<string,Sprite>::iterator it2=charCurrent.begin();it2!=charCurrent.end();it2++){
+            if(it2->second.status==0)
+                continue;
+            
+            string current = it2->first;
 
-    /*Matrices.model = glm::mat4(1.0f);
+            glm::mat4 MVP;  // MVP = Projection * View * Model
+            Matrices.model = glm::mat4(1.0f);
 
-      glm::mat4 translateRectangle = glm::translate (glm::vec3(2, 0, 0));        // glTranslatef
-      glm::mat4 rotateRectangle = glm::rotate((float)(rectangle_rotation*M_PI/180.0f), glm::vec3(0,0,1)); // rotate about vector (-1,1,1)
-      Matrices.model *= (translateRectangle * rotateRectangle);
-      MVP = VP * Matrices.model;
-      glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+            /* Render your scene */
+            glm::mat4 ObjectTransform;
+            float x_diff,y_diff;
+            x_diff=pig1Objects[current].x;
+            y_diff=pig1Objects[current].y;
+            glm::mat4 translateObject = glm::translate (glm::vec3(base_x+charCurrent[current].x, base_y+charCurrent[current].y, 0.0f)); // glTranslatef
+            ObjectTransform=translateObject;
+            Matrices.model *= ObjectTransform;
+            MVP = VP * Matrices.model; // MVP = p * V * M
 
-    // draw3DObject draws the VAO given to it using current MVP matrix
-    draw3DObject(rectangle);*/
+            //  Don't change unless you are sure!!
+            glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-    // Increment angles
-    float increments = 1;
-
+            // draw3DObject draws the VAO given to it using current MVP matrix
+            draw3DObject(charCurrent[current].object);
+            // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+            //glPopMatrix (); 
+        }
+    }
     //camera_rotation_angle++; // Simulating camera rotation
 }
 
@@ -1546,6 +1627,21 @@ void initGL (GLFWwindow* window, int width, int height)
 {
     /* Objects should be created before any other gl function and shaders */
     // Create the models
+
+    characters[0]=&char1Objects;
+    characters[1]=&char2Objects;
+    characters[2]=&char3Objects;
+    characters[3]=&char4Objects;
+
+    characterPosX[0]=200;
+    characterPosX[1]=220;
+    characterPosX[2]=240;
+    characterPosX[3]=260;
+
+    characterPosY[0]=250;
+    characterPosY[1]=250;
+    characterPosY[2]=250;
+    characterPosY[3]=250;
 
     COLOR grey = {168.0/255.0,168.0/255.0,168.0/255.0};
     COLOR red = {1,0,0};
@@ -1730,6 +1826,27 @@ void initGL (GLFWwindow* window, int width, int height)
     goalObjects["goal2"].status=0;
     createCircle("goal3",100000,darkgreen,-320,0,15,15,"goal",1);
     goalObjects["goal3"].status=0;
+
+    //Texts
+    int t;
+    for(t=1;t<=4;t++){
+        string layer;
+        if(t==1)
+            layer="char1";
+        if(t==2)
+            layer="char2";
+        if(t==3)
+            layer="char3";
+        if(t==4)
+            layer="char4";
+        createRectangle("top",100000,brown3,brown3,brown3,brown3,0,10,2,10,layer);
+        createRectangle("bottom",100000,brown3,brown3,brown3,brown3,0,-10,2,10,layer);
+        createRectangle("middle",100000,brown3,brown3,brown3,brown3,0,0,2,10,layer);
+        createRectangle("left1",100000,brown3,brown3,brown3,brown3,-5,5,10,2,layer);
+        createRectangle("left2",100000,brown3,brown3,brown3,brown3,-5,-5,10,2,layer);
+        createRectangle("right1",100000,brown3,brown3,brown3,brown3,5,5,10,2,layer);
+        createRectangle("right2",100000,brown3,brown3,brown3,brown3,5,-5,10,2,layer);
+    }
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "Sample_GL.vert", "Sample_GL.frag" );
