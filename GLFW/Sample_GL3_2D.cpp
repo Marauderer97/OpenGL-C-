@@ -839,7 +839,7 @@ int checkCollision(string name, float dx, float dy){
                         }
                     }
                 }
-                if(col_object.fixed==1 && name=="cannonball"){
+                if(col_object.fixed==1){
                     if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object))){
                         my_object.x_speed*=-1/1.2;
                     }
