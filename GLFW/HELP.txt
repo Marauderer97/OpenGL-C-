@@ -16,3 +16,18 @@ Keyboard:
 8)'F' to increase the launch power
 9)'A' to increase the launch angle
 10)'B' to decrease the launch angle
+
+
+About the game:
+
+1)Get a score as high as possible.
+2)There are coins scattered around collecting which give you a 100 points
+3)There is a switch in the game which the cannonball can activate (by jumping on it), this would give you the locations of the 3 goals. These goals each give you 200 points.
+4)Killing a pig gives you a 100 points
+5)Breaking boxes would give you 50 points
+
+
+Features:
+
+1)No images used anywhere in the game. Everything is create by using shapes in openGL. This ensure the loading of the game is quick and efficient.
+
