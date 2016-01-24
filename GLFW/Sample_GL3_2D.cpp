@@ -270,38 +270,38 @@ int keyboard_pressed=0;
 
 void mousescroll(GLFWwindow* window, double xoffset, double yoffset)
 {
-   if (yoffset==-1) { 
-       zoom_camera /= 1.1; //make it bigger than current size
-   }
-   else if(yoffset==1){
-       zoom_camera *= 1.1; //make it bigger than current size
-   }
-   if (zoom_camera<=1) {
-       zoom_camera = 1;
-   }
-   if (zoom_camera>=4) {
-       zoom_camera=4;
-   }
-   if(x_change-400.0f/zoom_camera<-400)
-		x_change=-400+400.0f/zoom_camera;
+    if (yoffset==-1) { 
+        zoom_camera /= 1.1; //make it bigger than current size
+    }
+    else if(yoffset==1){
+        zoom_camera *= 1.1; //make it bigger than current size
+    }
+    if (zoom_camera<=1) {
+        zoom_camera = 1;
+    }
+    if (zoom_camera>=4) {
+        zoom_camera=4;
+    }
+    if(x_change-400.0f/zoom_camera<-400)
+        x_change=-400+400.0f/zoom_camera;
     else if(x_change+400.0f/zoom_camera>400)
-		x_change=400-400.0f/zoom_camera;
-	if(y_change-300.0f/zoom_camera<-300)
-		y_change=-300+300.0f/zoom_camera;
-	else if(y_change+300.0f/zoom_camera>300)
-		y_change=300-300.0f/zoom_camera;
-   Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+        x_change=400-400.0f/zoom_camera;
+    if(y_change-300.0f/zoom_camera<-300)
+        y_change=-300+300.0f/zoom_camera;
+    else if(y_change+300.0f/zoom_camera>300)
+        y_change=300-300.0f/zoom_camera;
+    Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
 }
 
 void check_pan(){
-	if(x_change-400.0f/zoom_camera<-400)
-		x_change=-400+400.0f/zoom_camera;
-	else if(x_change+400.0f/zoom_camera>400)
-		x_change=400-400.0f/zoom_camera;
-	if(y_change-300.0f/zoom_camera<-300)
-		y_change=-300+300.0f/zoom_camera;
-	else if(y_change+300.0f/zoom_camera>300)
-		y_change=300-300.0f/zoom_camera;
+    if(x_change-400.0f/zoom_camera<-400)
+        x_change=-400+400.0f/zoom_camera;
+    else if(x_change+400.0f/zoom_camera>400)
+        x_change=400-400.0f/zoom_camera;
+    if(y_change-300.0f/zoom_camera<-300)
+        y_change=-300+300.0f/zoom_camera;
+    else if(y_change+300.0f/zoom_camera>300)
+        y_change=300-300.0f/zoom_camera;
 }
 
 void initKeyboard(){
@@ -320,22 +320,22 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 
     if (action == GLFW_RELEASE) {
         switch (key) {
-        	case GLFW_KEY_UP:
-        		mousescroll(window,0,+1);
-        		check_pan();
-        		break;
-        	case GLFW_KEY_DOWN:
-        		mousescroll(window,0,-1);
-        		check_pan();
-        		break;
-        	case GLFW_KEY_RIGHT:
-        		x_change+=10;
-        		check_pan();
-        		break;
-        	case GLFW_KEY_LEFT:
-        		x_change-=10;
-        		check_pan();
-        		break;
+            case GLFW_KEY_UP:
+                mousescroll(window,0,+1);
+                check_pan();
+                break;
+            case GLFW_KEY_DOWN:
+                mousescroll(window,0,-1);
+                check_pan();
+                break;
+            case GLFW_KEY_RIGHT:
+                x_change+=10;
+                check_pan();
+                break;
+            case GLFW_KEY_LEFT:
+                x_change-=10;
+                check_pan();
+                break;
             case GLFW_KEY_S:
                 initKeyboard();
                 if(launch_power>(760*760+560*560)/10)
@@ -372,14 +372,14 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 cannonObjects["cannonaim"].status=0;
                 if(player_status==0){
                     player_status=1;
-                    if(objects["vishrectangle"].inAir == 0){
-                        objects["vishrectangle"].inAir = 1;
-                        objects["vishrectangle"].x = -315+cos(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
-                        objects["vishrectangle"].y = -210+sin(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                    if(objects["cannonball"].inAir == 0){
+                        objects["cannonball"].inAir = 1;
+                        objects["cannonball"].x = -315+cos(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
+                        objects["cannonball"].y = -210+sin(launch_angle*(M_PI/180))*cannonObjects["cannonrectangle"].width;
                         //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
                         //Also adjust the sensitivity of the mouse drag as required
-                        objects["vishrectangle"].y_speed = min((abs(launch_power*10/89120)*sin(launch_angle*(M_PI/180))),30.0);
-                        objects["vishrectangle"].x_speed = min((abs(launch_power*10/89120)*cos(launch_angle*(M_PI/180))),30.0);
+                        objects["cannonball"].y_speed = min((abs(launch_power*10/89120)*sin(launch_angle*(M_PI/180))),30.0);
+                        objects["cannonball"].x_speed = min((abs(launch_power*10/89120)*cos(launch_angle*(M_PI/180))),30.0);
                         for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
                             string current = it->first; //The name of the current object
                             cannonObjects[current].dx=16;
@@ -396,9 +396,9 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 // do something ..
                 break;
             case GLFW_KEY_R:
-                objects["vishrectangle"].y=-240;
-                objects["vishrectangle"].x=-315;
-                objects["vishrectangle"].inAir=0;
+                objects["cannonball"].y=-240;
+                objects["cannonball"].x=-315;
+                objects["cannonball"].inAir=0;
                 for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
                     string current = it->first; //The name of the current object
                     if(cannonObjects[current].isMovingAnim==1){
@@ -461,16 +461,16 @@ void mouse_release(GLFWwindow* window, int button){
     if(player_status==0){
         player_status=1;
         glfwGetCursorPos(window,&mouse_x,&mouse_y);
-        if(objects["vishrectangle"].inAir == 0){
-            objects["vishrectangle"].inAir = 1;
+        if(objects["cannonball"].inAir == 0){
+            objects["cannonball"].inAir = 1;
             float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
-            objects["vishrectangle"].x = -315+cos(angle)*cannonObjects["cannonrectangle"].width;
-            objects["vishrectangle"].y = -210+sin(angle)*cannonObjects["cannonrectangle"].width;
+            objects["cannonball"].x = -315+cos(angle)*cannonObjects["cannonrectangle"].width;
+            objects["cannonball"].y = -210+sin(angle)*cannonObjects["cannonrectangle"].width;
             //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
             //Also adjust the sensitivity of the mouse drag as required
             click_time=glfwGetTime();
-            objects["vishrectangle"].y_speed = min((543-mouse_y)/15+3.0,30.0);
-            objects["vishrectangle"].x_speed = min((mouse_x-77)/15+3.0,30.0);
+            objects["cannonball"].y_speed = min((543-mouse_y)/15+3.0,30.0);
+            objects["cannonball"].x_speed = min((mouse_x-77)/15+3.0,30.0);
             for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
                 string current = it->first; //The name of the current object
                 cannonObjects[current].dx=16;
@@ -493,11 +493,11 @@ void mouseButton (GLFWwindow* window, int button, int action, int mods)
             }
             break;
         case GLFW_MOUSE_BUTTON_RIGHT:
-        	if (action == GLFW_PRESS) {
-        		right_mouse_clicked=1;
-        	}
+            if (action == GLFW_PRESS) {
+                right_mouse_clicked=1;
+            }
             if (action == GLFW_RELEASE) {
-            	right_mouse_clicked=0;
+                right_mouse_clicked=0;
             }
             break;
         default:
@@ -637,13 +637,13 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
     else if(component=="goal")
         goalObjects[name]=vishsprite;
     else if(component=="pig1")
-    	pig1Objects[name]=vishsprite;
+        pig1Objects[name]=vishsprite;
     else if(component=="pig2")
-    	pig2Objects[name]=vishsprite;
+        pig2Objects[name]=vishsprite;
     else if(component=="pig3")
-    	pig3Objects[name]=vishsprite;
+        pig3Objects[name]=vishsprite;
     else if(component=="pig4")
-    	pig4Objects[name]=vishsprite;
+        pig4Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -705,13 +705,13 @@ void createCircle (string name, float weight, COLOR color, float x, float y, flo
     else if(component=="goal")
         goalObjects[name]=vishsprite;
     else if(component=="pig1")
-    	pig1Objects[name]=vishsprite;
+        pig1Objects[name]=vishsprite;
     else if(component=="pig2")
-    	pig2Objects[name]=vishsprite;
+        pig2Objects[name]=vishsprite;
     else if(component=="pig3")
-    	pig3Objects[name]=vishsprite;
+        pig3Objects[name]=vishsprite;
     else if(component=="pig4")
-    	pig4Objects[name]=vishsprite;
+        pig4Objects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -754,8 +754,8 @@ int checkCollisionBottom(Sprite col_object, Sprite my_object){
 //Best Method
 int checkCollision(string name, float dx, float dy){
     int any_collide=0;
-    if(name=="vishrectangle"){
-        if(checkCollisionBottom(objects["springbase2"],objects["vishrectangle"])){
+    if(name=="cannonball"){
+        if(checkCollisionBottom(objects["springbase2"],objects["cannonball"])){
             if(objects["springbase2"].isMovingAnim==0){
                 objects["springbase2"].isMovingAnim=1;
                 objects["springbase2"].dy=15;
@@ -765,7 +765,7 @@ int checkCollision(string name, float dx, float dy){
         }
         for(map<string,Sprite>::iterator it2=coins.begin();it2!=coins.end();it2++){
             Sprite col_object=coins[it2->first];
-            Sprite my_object=objects["vishrectangle"];
+            Sprite my_object=objects["cannonball"];
             if(col_object.status==0)
                 continue;
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
@@ -777,7 +777,7 @@ int checkCollision(string name, float dx, float dy){
         }
         for(map<string,Sprite>::iterator it2=goalObjects.begin();it2!=goalObjects.end();it2++){
             Sprite col_object=goalObjects[it2->first];
-            Sprite my_object=objects["vishrectangle"];
+            Sprite my_object=objects["cannonball"];
             if(col_object.status==0)
                 continue;
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
@@ -826,7 +826,7 @@ int checkCollision(string name, float dx, float dy){
                     //col_object.x_speed=cos(angle_from_x)*col_x_speed_new+sin(angle_from_x)*col_y_speed_new;
                     //col_object.y_speed=cos(angle_from_x)*col_y_speed_new+sin(angle_from_x)*col_x_speed_new;
                     col_object.inAir=1;
-                    if(col_object.isRotating==0 && name=="vishrectangle" && (abs(my_object.x_speed)>=15 || abs(my_object.y_speed)>=15)){
+                    if(col_object.isRotating==0 && name=="cannonball" && (abs(my_object.x_speed)>=15 || abs(my_object.y_speed)>=15)){
                         if(my_object.x_speed>0 || my_object.y_speed>0){
                             col_object.isRotating=1;
                             col_object.direction=0;
@@ -839,7 +839,7 @@ int checkCollision(string name, float dx, float dy){
                         }
                     }
                 }
-                if(col_object.fixed==1 && name=="vishrectangle"){
+                if(col_object.fixed==1 && name=="cannonball"){
                     if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object))){
                         my_object.x_speed*=-1/1.2;
                     }
@@ -848,7 +848,7 @@ int checkCollision(string name, float dx, float dy){
                     }
                 }
                 else{
-                    if(name!="vishrectangle"){
+                    if(name!="cannonball"){
                         my_object.x_speed=(coef3*my_object.x_speed+coef2*col_object.x_speed); //Use elastic collision
                         my_object.y_speed=(coef3*my_object.y_speed+coef2*col_object.y_speed); //Use elastic collision
                     }
@@ -874,7 +874,7 @@ int checkCollision(string name, float dx, float dy){
                         my_object.y_speed=0;
                         my_object.x_speed=0;
                         my_object.inAir=0;
-                        if(name=="vishrectangle" && player_reset_timer==0 && player_status==1){
+                        if(name=="cannonball" && player_reset_timer==0 && player_status==1){
                             player_reset_timer=30;
                         }
                     }
@@ -894,24 +894,24 @@ int checkCollision(string name, float dx, float dy){
                     col_object.y_speed=0;
             }
         }
-        if(collide==1 && name=="vishrectangle" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
+        if(collide==1 && name=="cannonball" && col_object.fixed==0 && (abs(my_object.x_speed)>=5 || abs(my_object.y_speed)>=5)){
             any_collide=1;
             col_object.health-=min(max(5.0,max(abs(my_object.x_speed),abs(my_object.y_speed))*2.5),10.0);
             if(col_object.health<60){
-            	if(colliding=="pig1")
-            		pig1Objects["pig1eye1hurt"].status=1;
-            	else if(colliding=="pig2")
-            		pig2Objects["pig2eye2hurt"].status=1;
-            	else if(colliding=="pig3")
-            		pig3Objects["pig3eye1hurt"].status=1;
-            	else if(colliding=="pig4")
-            		pig4Objects["pig4eye1hurt"].status=1;
+                if(colliding=="pig1")
+                    pig1Objects["pig1eye1hurt"].status=1;
+                else if(colliding=="pig2")
+                    pig2Objects["pig2eye2hurt"].status=1;
+                else if(colliding=="pig3")
+                    pig3Objects["pig3eye1hurt"].status=1;
+                else if(colliding=="pig4")
+                    pig4Objects["pig4eye1hurt"].status=1;
             }
             if(col_object.health<=0){
                 col_object.health=0;
                 player_score+=50;
                 if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4")
-                	player_score+=50;
+                    player_score+=50;
                 cout << player_score << endl;
                 col_object.status=0;
             }
@@ -962,7 +962,7 @@ int checkCollisionSphere(string name,float dx, float dy){
                     }
                 }
                 collide=1;
-                if(name=="vishrectangle" && col_object.fixed==0){
+                if(name=="cannonball" && col_object.fixed==0){
                     col_object.health-=25;
                     if(col_object.health<=0){
                         col_object.health=0;
@@ -987,18 +987,18 @@ double new_mouse_pos_x, new_mouse_pos_y;
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
-	glfwGetCursorPos(window, &new_mouse_pos_x, &new_mouse_pos_y);
-	if(right_mouse_clicked==1){
-		x_change+=new_mouse_pos_x-mouse_pos_x;
-		y_change-=new_mouse_pos_y-mouse_pos_y;
-		check_pan();
-	}
-	Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
-	glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
+    glfwGetCursorPos(window, &new_mouse_pos_x, &new_mouse_pos_y);
+    if(right_mouse_clicked==1){
+        x_change+=new_mouse_pos_x-mouse_pos_x;
+        y_change-=new_mouse_pos_y-mouse_pos_y;
+        check_pan();
+    }
+    Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
+    glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
     if(glfwGetTime()-click_time>=2){
-        objects["vishrectangle"].y=-240;
-        objects["vishrectangle"].x=-315;
-        objects["vishrectangle"].inAir=0;
+        objects["cannonball"].y=-240;
+        objects["cannonball"].x=-315;
+        objects["cannonball"].inAir=0;
         for(map<string,Sprite>::iterator it=cannonObjects.begin();it!=cannonObjects.end();it++){
             string current = it->first; //The name of the current object
             if(cannonObjects[current].isMovingAnim==1){
@@ -1028,10 +1028,10 @@ void draw (GLFWwindow* window)
         createRectangle("cannonpowerdisplay",10000,my_color,my_color,my_color,my_color,backgroundObjects["cannonpowerdisplay"].x,backgroundObjects["cannonpowerdisplay"].y,25,backgroundObjects["cannonpowerdisplay"].width,"background");
         if(player_reset_timer>0){
             player_reset_timer-=1;
-            if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
+            if(player_reset_timer==0 && objects["cannonball"].inAir==0 && player_status==1){
                 player_status=0;
-                objects["vishrectangle"].y=-240;
-                objects["vishrectangle"].x=-315;
+                objects["cannonball"].y=-240;
+                objects["cannonball"].x=-315;
             }
         }
     }
@@ -1057,10 +1057,10 @@ void draw (GLFWwindow* window)
     }
     if(player_reset_timer>0){
         player_reset_timer-=1;
-        if(player_reset_timer==0 && objects["vishrectangle"].inAir==0 && player_status==1){
+        if(player_reset_timer==0 && objects["cannonball"].inAir==0 && player_status==1){
             player_status=0;
-            objects["vishrectangle"].y=-240;
-            objects["vishrectangle"].x=-315;
+            objects["cannonball"].y=-240;
+            objects["cannonball"].x=-315;
         }
     }
     // clear the color and depth in the frame buffer
@@ -1192,15 +1192,15 @@ void draw (GLFWwindow* window)
         if(objects[current].status==0)
             continue;
         if(objects[current].fixed==0 && objects[current].y_speed==0){
-        	moveObject(current,0,-2);
-        	int col_state=0;
-        	for(map<string,Sprite>::iterator it3=objects.begin();it3!=objects.end();it3++){
-        		if(it3->second.status==0)
+            moveObject(current,0,-2);
+            int col_state=0;
+            for(map<string,Sprite>::iterator it3=objects.begin();it3!=objects.end();it3++){
+                if(it3->second.status==0)
                     continue;
                 if(checkCollisionBottom(it3->second,objects[current]))
-        			col_state=1;
-        	}
-        	moveObject(current,0,2);
+                    col_state=1;
+            }
+            moveObject(current,0,2);
             if(col_state==0){
                 objects[current].inAir=1;
             }
@@ -1251,7 +1251,7 @@ void draw (GLFWwindow* window)
             }
         }
 
-        if (objects[current].isRotating==1 && current!="vishrectangle"){
+        if (objects[current].isRotating==1 && current!="cannonball"){
             objects[current].remAngle-=9;
             float xShift = -0.5;
             if(objects[current].direction==0){
@@ -1259,7 +1259,7 @@ void draw (GLFWwindow* window)
                 objects[current].angle-=9;
             }
             else
-            	objects[current].angle+=9;
+                objects[current].angle+=9;
             moveObject(current,xShift,0);
             if(checkCollision(current,xShift,0)){
                 moveObject(current,-xShift,0);
@@ -1614,15 +1614,15 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("groundfloor3",10000,cratebrown1,cratebrown1,cratebrown1,cratebrown1,30,-260,20,20,"");
     objects["groundfloor3"].fixed=1;
 
-    createCircle("vishrectangle",2,black,-315,-270,15,10,"",1); //Generate sprites
-    objects["vishrectangle"].friction=0.3;
-    createRectangle("vishrectangle2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-100,60,60,"");
-    createRectangle("vishrectangle3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-160,30,30,"");
-    createRectangle("vishrectangle4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-190,30,30,"");
-    createRectangle("vishrectangle5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-220,30,30,"");
+    createCircle("cannonball",2,black,-315,-270,15,10,"",1); //Generate sprites
+    objects["cannonball"].friction=0.3;
+    createRectangle("crate1",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-100,60,60,"");
+    createRectangle("crate2",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-160,30,30,"");
+    createRectangle("crate3",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-190,30,30,"");
+    createRectangle("crate4",1,cratebrown,cratebrown2,cratebrown2,cratebrown,160,-220,30,30,"");
 
     //On the skyfloor
-    createRectangle("vishrectangle6",1,cratebrown,cratebrown2,cratebrown2,cratebrown,270,140,40,40,"");
+    createRectangle("crate5",1,cratebrown,cratebrown2,cratebrown2,cratebrown,270,140,40,40,"");
 
     createCircle("pig1",1,lightpink,320,-155,20,15,"",1);
     createCircle("pig1ear1",1,lightpink,-17,13,7,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
@@ -1635,10 +1635,10 @@ void initGL (GLFWwindow* window, int width, int height)
     pig1Objects["pig1eye1hurt"].status=0;
     createCircle("pig1eyeball1",1,black,-13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
     createCircle("pig1eyeball2",1,black,13,0,2,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-	createCircle("pig1nose",1,darkpink,0,-5,10,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-	createCircle("pig1nose1",1,darkbrown,2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-	createCircle("pig1nose2",1,darkbrown,-2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
-    
+    createCircle("pig1nose",1,darkpink,0,-5,10,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1nose1",1,darkbrown,2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+    createCircle("pig1nose2",1,darkbrown,-2.4,-5,2.4,15,"pig1",1); //Store x and y offsets from pig1 as x,y here
+
     createCircle("pig2",1,lightpink,0,-150,20,15,"",1);
     createCircle("pig2ear1",1,lightpink,-17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     createCircle("pig2ear2",1,lightpink,17,13,7,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
@@ -1650,11 +1650,11 @@ void initGL (GLFWwindow* window, int width, int height)
     pig2Objects["pig2eye2hurt"].status=0;
     createCircle("pig2eyeball1",1,black,-13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
     createCircle("pig2eyeball2",1,black,13,0,2,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
-	createCircle("pig2nose",1,darkpink,0,-5,10,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
-	createCircle("pig2nose1",1,darkbrown,2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
-	createCircle("pig2nose2",1,darkbrown,-2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2nose",1,darkpink,0,-5,10,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2nose1",1,darkbrown,2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
+    createCircle("pig2nose2",1,darkbrown,-2.4,-5,2.4,15,"pig2",1); //Store x and y offsets from pig2 as x,y here
 
-	createCircle("pig3",1,lightpink,270,255,20,15,"",1);
+    createCircle("pig3",1,lightpink,270,255,20,15,"",1);
     createCircle("pig3ear1",1,lightpink,-17,13,7,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
     createCircle("pig3ear2",1,lightpink,17,13,7,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
     //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig3 as x,y here
@@ -1665,11 +1665,11 @@ void initGL (GLFWwindow* window, int width, int height)
     pig3Objects["pig3eye1hurt"].status=0;
     createCircle("pig3eyeball1",1,black,-13,0,2,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
     createCircle("pig3eyeball2",1,black,13,0,2,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
-	createCircle("pig3nose",1,darkpink,0,-5,10,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
-	createCircle("pig3nose1",1,darkbrown,2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
-	createCircle("pig3nose2",1,darkbrown,-2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3nose",1,darkpink,0,-5,10,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3nose1",1,darkbrown,2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
+    createCircle("pig3nose2",1,darkbrown,-2.4,-5,2.4,15,"pig3",1); //Store x and y offsets from pig3 as x,y here
 
-	createCircle("pig4",1,lightpink,160,0,20,15,"",1);
+    createCircle("pig4",1,lightpink,160,0,20,15,"",1);
     createCircle("pig4ear1",1,lightpink,-17,13,7,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
     createCircle("pig4ear2",1,lightpink,17,13,7,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
     //createCircle("pig1ear1in",1,darkpink,-17,14,4,15,"pig1",1); //Store x and y offsets from pig4 as x,y here
@@ -1680,10 +1680,10 @@ void initGL (GLFWwindow* window, int width, int height)
     pig4Objects["pig4eye1hurt"].status=0;
     createCircle("pig4eyeball1",1,black,-13,0,2,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
     createCircle("pig4eyeball2",1,black,13,0,2,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
-	createCircle("pig4nose",1,darkpink,0,-5,10,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
-	createCircle("pig4nose1",1,darkbrown,2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
-	createCircle("pig4nose2",1,darkbrown,-2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
-    
+    createCircle("pig4nose",1,darkpink,0,-5,10,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4nose1",1,darkbrown,2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+    createCircle("pig4nose2",1,darkbrown,-2.4,-5,2.4,15,"pig4",1); //Store x and y offsets from pig4 as x,y here
+
 
     createRectangle("floor",10000,lightgreen,lightgreen,lightgreen,lightgreen,0,-300,60,800,"");
     objects["floor"].fixed=1;
