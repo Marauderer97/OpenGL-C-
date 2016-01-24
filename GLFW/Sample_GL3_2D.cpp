@@ -77,11 +77,16 @@ map <string, Sprite> char2Objects;
 map <string, Sprite> char3Objects;
 map <string, Sprite> char4Objects;
 
-map <string, Sprite> *characters[4];
-char characterValues[4];
-float characterPosX[4];
-float characterPosY[4];
+map <string, Sprite> charscoreObjects1;
+map <string, Sprite> charscoreObjects2;
+map <string, Sprite> charscoreObjects3;
 
+map <string, Sprite> *characters[7];
+char characterValues[7];
+float characterPosX[7];
+float characterPosY[7];
+
+int scoreDrawTimer=0;
 int player_score=0;
 float x_change = 0; //For the camera pan
 float y_change = 0; //For the camera pan
@@ -661,6 +666,12 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         char3Objects[name]=vishsprite;
     else if(component=="char4")
         char4Objects[name]=vishsprite;
+    else if(component=="charscore1")
+        charscoreObjects1[name]=vishsprite;
+    else if(component=="charscore2")
+        charscoreObjects2[name]=vishsprite;
+    else if(component=="charscore3")
+        charscoreObjects3[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -788,7 +799,17 @@ int checkCollision(string name, float dx, float dy){
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
                 coins[it2->first].status=0;
                 cout <<" COIN " << endl;
+                scoreDrawTimer=50;
                 player_score+=100;
+                characterValues[4]='1';
+                characterValues[5]='0';
+                characterValues[6]='0';
+                characterPosX[4]=it2->second.x;
+                characterPosY[4]=it2->second.y+it2->second.height/2+15;
+                characterPosX[5]=it2->second.x+20;
+                characterPosY[5]=it2->second.y+it2->second.height/2+15;
+                characterPosX[6]=it2->second.x+40;
+                characterPosY[6]=it2->second.y+it2->second.height/2+15;
             }
         }
         for(map<string,Sprite>::iterator it2=goalObjects.begin();it2!=goalObjects.end();it2++){
@@ -799,7 +820,17 @@ int checkCollision(string name, float dx, float dy){
             if((dx>0 && checkCollisionRight(col_object,my_object)) || (dx<0 && checkCollisionLeft(col_object,my_object)) || (dy>0 && checkCollisionTop(col_object,my_object)) || (dy<0 && checkCollisionBottom(col_object,my_object))){
                 goalObjects[it2->first].status=0;
                 cout <<" GOAL OBTAINED, YOU WIN! " << endl;
+                scoreDrawTimer=50;
                 player_score+=200;
+                characterValues[4]='2';
+                characterValues[5]='0';
+                characterValues[6]='0';
+                characterPosX[4]=it2->second.x;
+                characterPosY[4]=it2->second.y+it2->second.height/2+15;
+                characterPosX[5]=it2->second.x+20;
+                characterPosY[5]=it2->second.y+it2->second.height/2+15;
+                characterPosX[6]=it2->second.x+40;
+                characterPosY[6]=it2->second.y+it2->second.height/2+15;
             }
         }
     }
@@ -925,8 +956,22 @@ int checkCollision(string name, float dx, float dy){
             if(col_object.health<=0){
                 col_object.health=0;
                 player_score+=50;
-                if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4")
+                characterValues[4]='.';
+                characterValues[5]='5';
+                characterValues[6]='0';
+                if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4"){
                     player_score+=50;
+                    characterValues[4]='1';
+                    characterValues[5]='0';
+                    characterValues[6]='0';
+                }
+                scoreDrawTimer=50;
+                characterPosX[4]=col_object.x;
+                characterPosY[4]=col_object.y+col_object.height/2+15;
+                characterPosX[5]=col_object.x+20;
+                characterPosY[5]=col_object.y+col_object.height/2+15;
+                characterPosX[6]=col_object.x+40;
+                characterPosY[6]=col_object.y+col_object.height/2+15;
                 col_object.status=0;
             }
         }
@@ -1034,6 +1079,16 @@ double new_mouse_pos_x, new_mouse_pos_y;
 /* Edit this function according to your assignment */
 void draw (GLFWwindow* window)
 {
+    if(scoreDrawTimer>0){
+        scoreDrawTimer--;
+        if(scoreDrawTimer<=0){
+            scoreDrawTimer=-1;
+            characterValues[4]='.'; // '.' represents and empty character (It won't be drawn)
+            characterValues[5]='.'; // '.' represents and empty character (It won't be drawn)
+            characterValues[6]='.'; // '.' represents and empty character (It won't be drawn)
+        }
+    }
+
     characterValues[0]='.';
     characterValues[1]='.';
     characterValues[2]='.';
@@ -1535,7 +1590,7 @@ void draw (GLFWwindow* window)
 
     //Draw the characters
     int t;
-    for(t=0;t<4;t++){
+    for(t=0;t<7;t++){
         map <string, Sprite> charCurrent = *characters[t];
         float base_x = characterPosX[t];
         float base_y = characterPosY[t];
@@ -1552,9 +1607,6 @@ void draw (GLFWwindow* window)
 
             /* Render your scene */
             glm::mat4 ObjectTransform;
-            float x_diff,y_diff;
-            x_diff=pig1Objects[current].x;
-            y_diff=pig1Objects[current].y;
             glm::mat4 translateObject = glm::translate (glm::vec3(base_x+charCurrent[current].x, base_y+charCurrent[current].y, 0.0f)); // glTranslatef
             ObjectTransform=translateObject;
             Matrices.model *= ObjectTransform;
@@ -1632,6 +1684,9 @@ void initGL (GLFWwindow* window, int width, int height)
     characters[1]=&char2Objects;
     characters[2]=&char3Objects;
     characters[3]=&char4Objects;
+    characters[4]=&charscoreObjects1;
+    characters[5]=&charscoreObjects2;
+    characters[6]=&charscoreObjects3;
 
     characterPosX[0]=280;
     characterPosX[1]=300;
@@ -1830,7 +1885,7 @@ void initGL (GLFWwindow* window, int width, int height)
 
     //Render the characters for the score
     int t;
-    for(t=1;t<=4;t++){
+    for(t=1;t<=7;t++){
         string layer;
         if(t==1)
             layer="char1";
@@ -1840,13 +1895,27 @@ void initGL (GLFWwindow* window, int width, int height)
             layer="char3";
         if(t==4)
             layer="char4";
-        createRectangle("top",100000,score,score,score,score,0,10,4,12,layer);
-        createRectangle("bottom",100000,score,score,score,score,0,-10,4,12,layer);
-        createRectangle("middle",100000,score,score,score,score,0,0,4,12,layer);
-        createRectangle("left1",100000,score,score,score,score,-5,5,12,4,layer);
-        createRectangle("left2",100000,score,score,score,score,-5,-5,12,4,layer);
-        createRectangle("right1",100000,score,score,score,score,5,5,12,4,layer);
-        createRectangle("right2",100000,score,score,score,score,5,-5,12,4,layer);
+        if(t==5)
+            layer="charscore1";
+        if(t==6)
+            layer="charscore2";
+        if(t==7)
+            layer="charscore3";
+        float width=12;
+        float height=4;
+        COLOR color = score;
+        if(t==5 || t==6 || t==7){ //These are the scores that appear above objects when they are destroyed
+            width=10;
+            height=2;
+            color = darkbrown;
+        }
+        createRectangle("top",100000,color,color,color,color,0,10,height,width,layer);
+        createRectangle("bottom",100000,color,color,color,color,0,-10,height,width,layer);
+        createRectangle("middle",100000,color,color,color,color,0,0,height,width,layer);
+        createRectangle("left1",100000,color,color,color,color,-5,5,width,height,layer);
+        createRectangle("left2",100000,color,color,color,color,-5,-5,width,height,layer);
+        createRectangle("right1",100000,color,color,color,color,5,5,width,height,layer);
+        createRectangle("right2",100000,color,color,color,color,5,-5,width,height,layer);
     }
 
     // Create and compile our GLSL program from the shaders
