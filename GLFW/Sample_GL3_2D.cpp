@@ -801,14 +801,17 @@ int checkCollision(string name, float dx, float dy){
                 cout <<" COIN " << endl;
                 scoreDrawTimer=50;
                 player_score+=100;
+                backgroundObjects["scorebackground"].status=1;
+                backgroundObjects["scorebackground"].x=it2->second.x+5;
+                backgroundObjects["scorebackground"].y=it2->second.y+it2->second.height/2+15;
                 characterValues[4]='1';
                 characterValues[5]='0';
                 characterValues[6]='0';
-                characterPosX[4]=it2->second.x;
+                characterPosX[4]=it2->second.x-20;
                 characterPosY[4]=it2->second.y+it2->second.height/2+15;
-                characterPosX[5]=it2->second.x+20;
+                characterPosX[5]=it2->second.x;
                 characterPosY[5]=it2->second.y+it2->second.height/2+15;
-                characterPosX[6]=it2->second.x+40;
+                characterPosX[6]=it2->second.x+20;
                 characterPosY[6]=it2->second.y+it2->second.height/2+15;
             }
         }
@@ -822,14 +825,17 @@ int checkCollision(string name, float dx, float dy){
                 cout <<" GOAL OBTAINED, YOU WIN! " << endl;
                 scoreDrawTimer=50;
                 player_score+=200;
+                backgroundObjects["scorebackground"].status=1;
+                backgroundObjects["scorebackground"].x=it2->second.x;
+                backgroundObjects["scorebackground"].y=it2->second.y+it2->second.height/2+15;
                 characterValues[4]='2';
                 characterValues[5]='0';
                 characterValues[6]='0';
-                characterPosX[4]=it2->second.x;
+                characterPosX[4]=it2->second.x-20;
                 characterPosY[4]=it2->second.y+it2->second.height/2+15;
-                characterPosX[5]=it2->second.x+20;
+                characterPosX[5]=it2->second.x;
                 characterPosY[5]=it2->second.y+it2->second.height/2+15;
-                characterPosX[6]=it2->second.x+40;
+                characterPosX[6]=it2->second.x+20;
                 characterPosY[6]=it2->second.y+it2->second.height/2+15;
             }
         }
@@ -959,18 +965,22 @@ int checkCollision(string name, float dx, float dy){
                 characterValues[4]='.';
                 characterValues[5]='5';
                 characterValues[6]='0';
+                backgroundObjects["scorebackground"].status=1;
+                backgroundObjects["scorebackground"].x=col_object.x+10;
+                backgroundObjects["scorebackground"].y=col_object.y+col_object.height/2+15;
                 if(colliding=="pig1" || colliding=="pig2" || colliding=="pig3" || colliding=="pig4"){
                     player_score+=50;
+                    backgroundObjects["scorebackground"].x=col_object.x+5;
                     characterValues[4]='1';
                     characterValues[5]='0';
                     characterValues[6]='0';
                 }
                 scoreDrawTimer=50;
-                characterPosX[4]=col_object.x;
+                characterPosX[4]=col_object.x-20;
                 characterPosY[4]=col_object.y+col_object.height/2+15;
-                characterPosX[5]=col_object.x+20;
+                characterPosX[5]=col_object.x;
                 characterPosY[5]=col_object.y+col_object.height/2+15;
-                characterPosX[6]=col_object.x+40;
+                characterPosX[6]=col_object.x+20;
                 characterPosY[6]=col_object.y+col_object.height/2+15;
                 col_object.status=0;
             }
@@ -1083,6 +1093,7 @@ void draw (GLFWwindow* window)
         scoreDrawTimer--;
         if(scoreDrawTimer<=0){
             scoreDrawTimer=-1;
+            backgroundObjects["scorebackground"].status=0;
             characterValues[4]='.'; // '.' represents and empty character (It won't be drawn)
             characterValues[5]='.'; // '.' represents and empty character (It won't be drawn)
             characterValues[6]='.'; // '.' represents and empty character (It won't be drawn)
@@ -1588,6 +1599,20 @@ void draw (GLFWwindow* window)
         //glPopMatrix (); 
     }
 
+
+    if(backgroundObjects["scorebackground"].status==1){
+        //Draw the scorebox background
+        glm::mat4 MVP;
+        Matrices.model = glm::mat4(1.0f);
+        glm::mat4 ObjectTransform;
+        glm::mat4 translateObject = glm::translate (glm::vec3(backgroundObjects["scorebackground"].x, backgroundObjects["scorebackground"].y, 0.0f)); 
+        ObjectTransform=translateObject;
+        Matrices.model *= ObjectTransform;
+        MVP = VP * Matrices.model; // MVP = p * V * M
+        glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+        draw3DObject(backgroundObjects["scorebackground"].object);
+    }
+
     //Draw the characters
     int t;
     for(t=0;t<7;t++){
@@ -1699,12 +1724,13 @@ void initGL (GLFWwindow* window, int width, int height)
     characterPosY[3]=250;
 
     COLOR grey = {168.0/255.0,168.0/255.0,168.0/255.0};
+    COLOR gold = {218.0/255.0,165.0/255.0,32.0/255.0};
+    COLOR coingold = {255.0/255.0,223.0/255.0,0.0/255.0};
     COLOR red = {1,0,0};
     COLOR lightgreen = {57/255.0,230/255.0,0/255.0};
     COLOR darkgreen = {51/255.0,102/255.0,0/255.0};
     COLOR black = {30/255.0,30/255.0,21/255.0};
     COLOR blue = {0,0,1};
-    COLOR gold = {1,1,0};
     COLOR darkbrown = {46/255.0,46/255.0,31/255.0};
     COLOR lightbrown = {95/255.0,63/255.0,32/255.0};
     COLOR brown1 = {117/255.0,78/255.0,40/255.0};
@@ -1873,8 +1899,8 @@ void initGL (GLFWwindow* window, int width, int height)
     createRectangle("cannonbase2",100000,brown3,brown3,brown3,brown3,-355,-245,30,20,"cannon");
     cannonObjects["cannonbase2"].angle=-20;
 
-    createCircle("coin1",100000,gold,320,-40,15,12,"coin",1);
-    createCircle("coin2",100000,gold,20,-40,15,12,"coin",1);
+    createCircle("coin1",100000,coingold,320,-40,15,12,"coin",1);
+    createCircle("coin2",100000,coingold,20,-40,15,12,"coin",1);
 
     createCircle("goal1",100000,darkgreen,130,-40,15,15,"goal",1);
     goalObjects["goal1"].status=0;
@@ -1883,6 +1909,8 @@ void initGL (GLFWwindow* window, int width, int height)
     createCircle("goal3",100000,darkgreen,-320,0,15,15,"goal",1);
     goalObjects["goal3"].status=0;
 
+    createCircle("scorebackground",100000,gold,0,0,35,8,"background",1);
+    backgroundObjects["scorebackground"].status=0;
     //Render the characters for the score
     int t;
     for(t=1;t<=7;t++){
@@ -1907,7 +1935,7 @@ void initGL (GLFWwindow* window, int width, int height)
         if(t==5 || t==6 || t==7){ //These are the scores that appear above objects when they are destroyed
             width=10;
             height=2;
-            color = darkbrown;
+            color = white;
         }
         createRectangle("top",100000,color,color,color,color,0,10,height,width,layer);
         createRectangle("bottom",100000,color,color,color,color,0,-10,height,width,layer);
