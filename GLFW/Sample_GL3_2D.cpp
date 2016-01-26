@@ -72,19 +72,26 @@ map <string, Sprite> pig1Objects;
 map <string, Sprite> pig2Objects;
 map <string, Sprite> pig3Objects;
 map <string, Sprite> pig4Objects;
-map <string, Sprite> char1Objects;
+
+map <string, Sprite> char1Objects; //The score displayed on top right of the screen
 map <string, Sprite> char2Objects;
 map <string, Sprite> char3Objects;
 map <string, Sprite> char4Objects;
 
-map <string, Sprite> charscoreObjects1;
+map <string, Sprite> charscoreObjects1; //The score that appears as a popup on top of objects
 map <string, Sprite> charscoreObjects2;
 map <string, Sprite> charscoreObjects3;
 
-map <string, Sprite> *characters[7];
-char characterValues[7];
-float characterPosX[7];
-float characterPosY[7];
+//We draw each character of the scorelabel string by moving the x position each time.
+map <string, Sprite> scoreLabelObjects; //The score label
+string scoreLabel;
+float scoreLabel_x;
+float scoreLabel_y;
+
+map <string, Sprite> *characters[8];
+char characterValues[8];
+float characterPosX[8];
+float characterPosY[8];
 
 int scoreDrawTimer=0;
 int player_score=0;
@@ -672,6 +679,8 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         charscoreObjects2[name]=vishsprite;
     else if(component=="charscore3")
         charscoreObjects3[name]=vishsprite;
+    else if(component=="scorelabel")
+        scoreLabelObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -1055,26 +1064,34 @@ void setStrokes(char val, int charNo, map<string,Sprite> curChar){
     curChar["left2"].status=0;
     curChar["right1"].status=0;
     curChar["right2"].status=0;
-    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6'|| val=='7' || val=='8' || val=='9'){
+    curChar["middle1"].status=0;
+    curChar["middle2"].status=0;
+    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6'|| val=='7' || val=='8' || val=='9' || val=='P' || val=='I' || val=='O' || val=='N' || val=='T' || val=='S'){
         curChar["top"].status=1;
     }
-    if(val=='2' || val=='3' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9'){
+    if(val=='2' || val=='3' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9' || val=='P' || val=='S'){
         curChar["middle"].status=1;
     }
-    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6' || val=='8' || val=='9'){
+    if(val=='0' || val=='2' || val=='3' || val=='5' || val=='6' || val=='8' || val=='9' || val=='O' || val=='S' || val=='I'){
         curChar["bottom"].status=1;
     }
-    if(val=='0' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9'){
+    if(val=='0' || val=='4' || val=='5' || val=='6' || val=='8' || val=='9' || val=='P' || val=='O' || val=='N' || val=='S'){
         curChar["left1"].status=1;
     }
-    if(val=='0' || val=='2' || val=='6' || val=='8'){
+    if(val=='0' || val=='2' || val=='6' || val=='8' || val=='P' || val=='O' || val=='N'){
         curChar["left2"].status=1;
     }
-    if(val=='0' || val=='1' || val=='2' || val=='3' || val=='4' || val=='7' || val=='8' || val=='9'){
+    if(val=='0' || val=='1' || val=='2' || val=='3' || val=='4' || val=='7' || val=='8' || val=='9' || val=='P' || val=='O' || val=='N'){
         curChar["right1"].status=1;
     }
-    if(val=='0' || val=='1' || val=='3' || val=='4' || val=='5' || val=='6' || val=='7' || val=='8' || val=='9'){
+    if(val=='0' || val=='1' || val=='3' || val=='4' || val=='5' || val=='6' || val=='7' || val=='8' || val=='9' || val=='O' || val=='N' || val=='S'){
         curChar["right2"].status=1;
+    }
+    if(val=='I' || val=='T'){
+        curChar["middle1"].status=1;
+    }
+    if(val=='I' || val=='T'){
+        curChar["middle2"].status=1;
     }
     *characters[charNo]=curChar;
 }
@@ -1646,6 +1663,37 @@ void draw (GLFWwindow* window)
             //glPopMatrix (); 
         }
     }
+
+    float base_x=scoreLabel_x;
+    float base_y=scoreLabel_y;
+    for(t=0;t<scoreLabel.length();t++){
+        setStrokes(scoreLabel[t],7,scoreLabelObjects);
+        for(map<string,Sprite>::iterator it2=scoreLabelObjects.begin();it2!=scoreLabelObjects.end();it2++){
+            if(it2->second.status==0)
+                continue;
+            
+            string current = it2->first;
+
+            glm::mat4 MVP;  // MVP = Projection * View * Model
+            Matrices.model = glm::mat4(1.0f);
+
+            /* Render your scene */
+            glm::mat4 ObjectTransform;
+            glm::mat4 translateObject = glm::translate (glm::vec3(base_x+it2->second.x, base_y+it2->second.y, 0.0f)); // glTranslatef
+            ObjectTransform=translateObject;
+            Matrices.model *= ObjectTransform;
+            MVP = VP * Matrices.model; // MVP = p * V * M
+
+            //  Don't change unless you are sure!!
+            glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+            // draw3DObject draws the VAO given to it using current MVP matrix
+            draw3DObject(it2->second.object);
+            // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
+            //glPopMatrix (); 
+        }
+        base_x+=17; //Next character
+    }
     //camera_rotation_angle++; // Simulating camera rotation
 }
 
@@ -1712,6 +1760,7 @@ void initGL (GLFWwindow* window, int width, int height)
     characters[4]=&charscoreObjects1;
     characters[5]=&charscoreObjects2;
     characters[6]=&charscoreObjects3;
+    characters[7]=&scoreLabelObjects;
 
     characterPosX[0]=280;
     characterPosX[1]=300;
@@ -1913,7 +1962,7 @@ void initGL (GLFWwindow* window, int width, int height)
     backgroundObjects["scorebackground"].status=0;
     //Render the characters for the score
     int t;
-    for(t=1;t<=7;t++){
+    for(t=1;t<=8;t++){
         string layer;
         if(t==1)
             layer="char1";
@@ -1929,12 +1978,19 @@ void initGL (GLFWwindow* window, int width, int height)
             layer="charscore2";
         if(t==7)
             layer="charscore3";
+        if(t==8)
+            layer="scorelabel";
         float width=12;
         float height=4;
         COLOR color = score;
         if(t==5 || t==6 || t==7){ //These are the scores that appear above objects when they are destroyed
             width=10;
             height=2;
+            color = white;
+        }
+        if(t==8){
+            width=12;
+            height=4;
             color = white;
         }
         createRectangle("top",100000,color,color,color,color,0,10,height,width,layer);
@@ -1944,6 +2000,8 @@ void initGL (GLFWwindow* window, int width, int height)
         createRectangle("left2",100000,color,color,color,color,-5,-5,width,height,layer);
         createRectangle("right1",100000,color,color,color,color,5,5,width,height,layer);
         createRectangle("right2",100000,color,color,color,color,5,-5,width,height,layer);
+        createRectangle("middle1",100000,color,color,color,color,0,5,width,height,layer);
+        createRectangle("middle2",100000,color,color,color,color,0,-5,width,height,layer);
     }
 
     // Create and compile our GLSL program from the shaders
@@ -1971,6 +2029,10 @@ int main (int argc, char** argv)
 {
     int width = 800;
     int height = 600;
+
+    scoreLabel="POINTS"; //Only use capitals
+    scoreLabel_x=175;
+    scoreLabel_y=250;
 
     GLFWwindow* window = initGLFW(width, height);
 
