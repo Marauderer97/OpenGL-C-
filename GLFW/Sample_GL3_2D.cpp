@@ -68,10 +68,11 @@ map <string, Sprite> cannonObjects; //Only store cannon components here
 map <string, Sprite> coins;
 map <string, Sprite> backgroundObjects;
 map <string, Sprite> goalObjects;
-map <string, Sprite> pig1Objects;
-map <string, Sprite> pig2Objects;
-map <string, Sprite> pig3Objects;
-map <string, Sprite> pig4Objects;
+
+map <string, Sprite> pig1Objects; //Pig1
+map <string, Sprite> pig2Objects; //Pig2
+map <string, Sprite> pig3Objects; //Pig3
+map <string, Sprite> pig4Objects; //Pig4
 
 map <string, Sprite> char1Objects; //The score displayed on top right of the screen
 map <string, Sprite> char2Objects;
@@ -88,7 +89,7 @@ string scoreLabel;
 float scoreLabel_x;
 float scoreLabel_y;
 
-map <string, Sprite> *characters[8];
+map <string, Sprite> *characters[8]; //For displaying text
 char characterValues[8];
 float characterPosX[8];
 float characterPosY[8];
@@ -283,8 +284,6 @@ void draw3DObject (struct VAO* vao)
 
 int player_status=0; //0 is ready to play, 1 is not ready yet
 
-/* Executed when a regular key is pressed/released/held-down */
-/* Prefered for Keyboard events */
 double launch_power=0;
 double launch_angle=0;
 int keyboard_pressed=0;
@@ -314,6 +313,7 @@ void mousescroll(GLFWwindow* window, double xoffset, double yoffset)
     Matrices.projection = glm::ortho((float)(-400.0f/zoom_camera+x_change), (float)(400.0f/zoom_camera+x_change), (float)(-300.0f/zoom_camera+y_change), (float)(300.0f/zoom_camera+y_change), 0.1f, 500.0f);
 }
 
+//Ensure the panning does not go out of the map
 void check_pan(){
     if(x_change-400.0f/zoom_camera<-400)
         x_change=-400+400.0f/zoom_camera;
@@ -337,8 +337,6 @@ void initKeyboard(){
 
 void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // Function is called first on GLFW_PRESS.
-
     if (action == GLFW_RELEASE) {
         switch (key) {
             case GLFW_KEY_UP:
@@ -493,10 +491,9 @@ void mouse_release(GLFWwindow* window, int button){
         if(objects["cannonball"].inAir == 0){
             objects["cannonball"].inAir = 1;
             float angle=cannonObjects["cannonrectangle"].angle*(M_PI/180.0);
+            //Adjust the sensitivity of the mouse drag as required
             objects["cannonball"].x = -315+cos(angle)*cannonObjects["cannonrectangle"].width;
             objects["cannonball"].y = -210+sin(angle)*cannonObjects["cannonrectangle"].width;
-            //Set max jump speeds here (currently 300 and 300) (Adjust these as required)
-            //Also adjust the sensitivity of the mouse drag as required
             click_time=glfwGetTime();
             objects["cannonball"].y_speed = min((543-mouse_y)/15+3.0,30.0);
             objects["cannonball"].x_speed = min((mouse_x-77)/15+3.0,30.0);
@@ -659,6 +656,7 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
     vishsprite.friction=0.4;
     vishsprite.health=100;
     vishsprite.weight=weight;
+    //All the different layers
     if(component=="cannon")
         cannonObjects[name]=vishsprite;
     else if(component=="background")
@@ -1008,62 +1006,6 @@ int checkCollision(string name, float dx, float dy){
     return any_collide;
 }
 
-//Check collision b/w rectangles or spheres, terrible if height is too different from width (Since circle will be way too large)
-//This won't work for the walls of our box so we won't use this
-//This is not accurate or efficient but is useful when we have rotated objects since standard collision checks dont work well for rotated objects
-//Call this function either with dx or dy only not both!
-//Not updated (Dont use directly)
-int checkCollisionSphere(string name,float dx, float dy){
-    int collide=0;
-    for(map<string,Sprite>::iterator it2=objects.begin();it2!=objects.end();it2++){
-        string colliding = it2->first;
-        Sprite col_object = it2->second;
-        Sprite my_object = objects[name];
-        if(col_object.status==0)
-            continue;
-        if(colliding!=name && col_object.radius!=-1){ //Check collision only with circles and rectangles
-            if((my_object.x-col_object.x)*(my_object.x-col_object.x)+(my_object.y-col_object.y)*(my_object.y-col_object.y)<(my_object.radius+col_object.radius)*(my_object.radius+col_object.radius))
-            {
-                if(dx!=0){
-                    if(col_object.fixed==0){
-                        col_object.x_speed=my_object.x_speed/2;
-                        col_object.inAir=1;
-                    }
-                    my_object.x-=dx;
-                    my_object.x_speed*=-1;
-                    my_object.x_speed/=(1+col_object.friction);
-                }
-                else if(dy!=0){
-                    if(col_object.fixed==0){
-                        col_object.y_speed=my_object.y_speed/2;
-                        col_object.inAir=1;
-                    }
-                    my_object.y-=dy;
-                    my_object.y_speed*=-1;
-                    my_object.y_speed/=2;
-                    if(abs(my_object.y_speed)<=7.5){
-                        my_object.y_speed=0;
-                        my_object.x_speed=0;
-                        my_object.inAir=0;
-                    }
-                }
-                collide=1;
-                if(name=="cannonball" && col_object.fixed==0){
-                    col_object.health-=25;
-                    if(col_object.health<=0){
-                        col_object.health=0;
-                        col_object.status=0;
-                    }
-                }
-            }
-        }
-        objects[name]=my_object;
-        objects[colliding]=col_object;
-    }
-    return collide;
-}
-
-
 void setStrokes(char val, int charNo, map<string,Sprite> curChar){
     curChar["top"].status=0;
     curChar["bottom"].status=0;
@@ -1242,27 +1184,19 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(backgroundObjects[current].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
-        /* Render your scene */
         glm::mat4 ObjectTransform;
         glm::mat4 translateObject = glm::translate (glm::vec3(backgroundObjects[current].x, backgroundObjects[current].y, 0.0f)); // glTranslatef
         ObjectTransform=translateObject;
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
-
-        //  Don't change unless you are sure!!
+        
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(backgroundObjects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1271,12 +1205,8 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(coins[current].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;	// MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
@@ -1290,12 +1220,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(coins[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1304,12 +1231,8 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(goalObjects[current].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
@@ -1319,12 +1242,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(goalObjects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1367,12 +1287,8 @@ void draw (GLFWwindow* window)
             //We can also use the checkCollisionSphere here instead but since we don't have any rotated blocks currently we will stick with this
             checkCollision(current,0,objects[current].y_speed*time_delta);
         }
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;	// MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
@@ -1425,12 +1341,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(objects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix ();
     }
 
@@ -1439,15 +1352,10 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(objects["pig1"].status==0 || pig1Objects[it->first].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
-        /* Render your scene */
         glm::mat4 ObjectTransform;
         float x_diff,y_diff;
         x_diff=pig1Objects[current].x;
@@ -1460,12 +1368,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(pig1Objects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1474,15 +1379,10 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(objects["pig2"].status==0 || pig2Objects[it->first].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
-        /* Render your scene */
         glm::mat4 ObjectTransform;
         float x_diff,y_diff;
         x_diff=pig2Objects[current].x;
@@ -1495,12 +1395,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(pig2Objects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1509,15 +1406,10 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(objects["pig3"].status==0 || pig3Objects[it->first].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
-        /* Render your scene */
         glm::mat4 ObjectTransform;
         float x_diff,y_diff;
         x_diff=pig3Objects[current].x;
@@ -1530,12 +1422,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(pig3Objects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1544,12 +1433,8 @@ void draw (GLFWwindow* window)
         string current = it->first; //The name of the current object
         if(objects["pig4"].status==0 || pig4Objects[it->first].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
@@ -1565,12 +1450,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(pig4Objects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1594,12 +1476,8 @@ void draw (GLFWwindow* window)
         }
         if(cannonObjects[current].status==0)
             continue;
-        // Send our transformation to the currently bound shader, in the "MVP" uniform
-        // For each model you render, since the MVP will be different (at least the M part)
-        //  Don't change unless you are sure!!
         glm::mat4 MVP;  // MVP = Projection * View * Model
 
-        // Load identity to model matrix
         Matrices.model = glm::mat4(1.0f);
 
         /* Render your scene */
@@ -1615,12 +1493,9 @@ void draw (GLFWwindow* window)
         Matrices.model *= ObjectTransform;
         MVP = VP * Matrices.model; // MVP = p * V * M
 
-        //  Don't change unless you are sure!!
         glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        // draw3DObject draws the VAO given to it using current MVP matrix
         draw3DObject(cannonObjects[current].object);
-        // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
         //glPopMatrix (); 
     }
 
@@ -1662,12 +1537,9 @@ void draw (GLFWwindow* window)
             Matrices.model *= ObjectTransform;
             MVP = VP * Matrices.model; // MVP = p * V * M
 
-            //  Don't change unless you are sure!!
             glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-            // draw3DObject draws the VAO given to it using current MVP matrix
             draw3DObject(charCurrent[current].object);
-            // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
             //glPopMatrix (); 
         }
     }
@@ -1692,17 +1564,13 @@ void draw (GLFWwindow* window)
             Matrices.model *= ObjectTransform;
             MVP = VP * Matrices.model; // MVP = p * V * M
 
-            //  Don't change unless you are sure!!
             glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-            // draw3DObject draws the VAO given to it using current MVP matrix
             draw3DObject(it2->second.object);
-            // Pop matrix to undo transformations till last push matrix instead of recomputing model matrix
             //glPopMatrix (); 
         }
         base_x+=17; //Next character
     }
-    //camera_rotation_angle++; // Simulating camera rotation
 }
 
 /* Initialise glfw window, I/O callbacks and the renderer to use */
@@ -1806,8 +1674,6 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR white = {255/255.0,255/255.0,255/255.0};
     COLOR score = {117/255.0,78/255.0,40/255.0};
 
-    //float x[] = {0.0,0.0,1.0};
-    //float y[] = {0.0,1.0,1.0};
     createRectangle("asky1",10000,skyblue,skyblue,skyblue,skyblue,0,0,600,800,"background");
     createRectangle("asky2",10000,skyblue1,skyblue1,skyblue1,skyblue1,0,-200,600,800,"background");
     createRectangle("asky3",10000,skyblue2,skyblue2,skyblue2,skyblue2,0,-400,600,800,"background");

@@ -39,3 +39,8 @@ Features:
 6)Small animations where pigs/boxes rotate/topple over and pigs get black eyes indicating their health.
 7)Used elastic collisions between movable objects and laws or reflection for collisions with immovable objects.
 8)A switch/button which unlocks goals.
+
+
+Note:
+
+All objects are sorted into different layers. Each layer is drawn one at a time. Some layers are more prefered and will be drawn last (Like the pig layers) whereas others will be drawn earlier (Like the background layer). Within a layer objects are drawn in a lexicographical order. These two together give you the ability to draw complex objects with ease.
