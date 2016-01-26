@@ -357,6 +357,14 @@ void keyboard (GLFWwindow* window, int key, int scancode, int action, int mods)
                 x_change-=10;
                 check_pan();
                 break;
+            case GLFW_KEY_N:
+                y_change+=10;
+                check_pan();
+                break;
+            case GLFW_KEY_M:
+                y_change-=10;
+                check_pan();
+                break;
             case GLFW_KEY_S:
                 initKeyboard();
                 if(launch_power>(760*760+560*560)/10)
