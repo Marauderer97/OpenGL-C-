@@ -89,15 +89,19 @@ string scoreLabel;
 float scoreLabel_x;
 float scoreLabel_y;
 
+map <string, Sprite> timerObjects; //The timer
+float timer_x;
+float timer_y;
+
 map <string, Sprite> endLabelObjects; //The you win/lose label
 string endLabel;
 float endLabel_x;
 float endLabel_y;
 
-map <string, Sprite> *characters[9]; //For displaying text
-char characterValues[9];
-float characterPosX[9];
-float characterPosY[9];
+map <string, Sprite> *characters[10]; //For displaying text
+char characterValues[10];
+float characterPosX[10];
+float characterPosY[10];
 
 int scoreDrawTimer=0;
 int player_score=0;
@@ -109,6 +113,8 @@ float airResistance = 0.2/15;
 int player_reset_timer=0;
 double click_time=0;
 float game_over=0;
+float game_start_timer=0;
+int game_timer=90;
 
 pair<float,float> moveObject(string name, float dx, float dy) {
     objects[name].x+=dx;
@@ -695,6 +701,8 @@ void createRectangle (string name, float weight, COLOR colorA, COLOR colorB, COL
         scoreLabelObjects[name]=vishsprite;
     else if(component=="endlabel")
         endLabelObjects[name]=vishsprite;
+    else if(component=="timelabel")
+        timerObjects[name]=vishsprite;
     else
         objects[name]=vishsprite;
 }
@@ -1069,14 +1077,22 @@ void draw (GLFWwindow* window)
     if(game_over==1){
         return;
     }
-    
+  
+    game_timer=(int)(90-(glfwGetTime()-game_start_timer));
+
     if(player_score>=1450){
         game_over=1;
         endLabel_x=-150;
         createRectangle("endgame",10000,winbackground,winbackground,winbackground,winbackground,0,0,200,600,"background");
         endLabel="YOU WIN";
     }
-    
+   
+    if(glfwGetTime()-game_start_timer>=90){
+        game_over=1;
+        createRectangle("endgame",10000,losebackground,losebackground,losebackground,losebackground,0,0,200,600,"background");
+        endLabel="YOU LOSE";
+    }
+
     if(scoreDrawTimer>0){
         scoreDrawTimer--;
         if(scoreDrawTimer<=0){
@@ -1637,6 +1653,39 @@ void draw (GLFWwindow* window)
         }
         base_x+=48; //Next character 
     }
+
+    //Draw the timer
+    if(game_over!=1){
+    base_x=timer_x;
+    base_y=timer_y;
+    int cur_game_timer = game_timer; 
+    while(cur_game_timer){
+        setStrokes('0'+(cur_game_timer)%10,9,timerObjects);
+        cur_game_timer/=10;
+        for(map<string,Sprite>::iterator it2=timerObjects.begin();it2!=timerObjects.end();it2++){
+            if(it2->second.status==0)
+                continue;
+            
+            string current = it2->first;
+
+            glm::mat4 MVP;  // MVP = Projection * View * Model
+            Matrices.model = glm::mat4(1.0f);
+
+            /* Render your scene */
+            glm::mat4 ObjectTransform;
+            glm::mat4 translateObject = glm::translate (glm::vec3(base_x+it2->second.x, base_y+it2->second.y, 0.0f)); // glTranslatef
+            ObjectTransform=translateObject;
+            Matrices.model *= ObjectTransform;
+            MVP = VP * Matrices.model; // MVP = p * V * M
+
+            glUniformMatrix4fv(Matrices.MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+            draw3DObject(it2->second.object);
+            //glPopMatrix (); 
+        }
+        base_x-=15; //Next character 
+    }
+    }
 }
 
 /* Initialise glfw window, I/O callbacks and the renderer to use */
@@ -1704,6 +1753,7 @@ void initGL (GLFWwindow* window, int width, int height)
     characters[6]=&charscoreObjects3;
     characters[7]=&scoreLabelObjects;
     characters[8]=&endLabelObjects;
+    characters[9]=&timerObjects;
 
     characterPosX[0]=280;
     characterPosX[1]=300;
@@ -1718,7 +1768,7 @@ void initGL (GLFWwindow* window, int width, int height)
     COLOR grey = {168.0/255.0,168.0/255.0,168.0/255.0};
     COLOR gold = {218.0/255.0,165.0/255.0,32.0/255.0};
     COLOR coingold = {255.0/255.0,223.0/255.0,0.0/255.0};
-    COLOR red = {1,0,0};
+    COLOR red = {255.0/255.0,51.0/255.0,51.0/255.0};
     COLOR lightgreen = {57/255.0,230/255.0,0/255.0};
     COLOR darkgreen = {51/255.0,102/255.0,0/255.0};
     COLOR black = {30/255.0,30/255.0,21/255.0};
@@ -1903,7 +1953,7 @@ void initGL (GLFWwindow* window, int width, int height)
     backgroundObjects["scorebackground"].status=0;
     //Render the characters for the score
     int t;
-    for(t=1;t<=9;t++){
+    for(t=1;t<=10;t++){
         string layer;
         if(t==1)
             layer="char1";
@@ -1923,8 +1973,11 @@ void initGL (GLFWwindow* window, int width, int height)
             layer="scorelabel";
         if(t==9)
             layer="endlabel";
+        if(t==10)
+            layer="timelabel";
         float width=12;
         float height=4;
+        float offset=10;
         COLOR color = score;
         if(t==5 || t==6 || t==7){ //These are the scores that appear above objects when they are destroyed
             width=10;
@@ -1936,12 +1989,14 @@ void initGL (GLFWwindow* window, int width, int height)
             height=4;
             color = white;
         }
-        float offset=10;
         if(t==9){
             width=40;
             height=12;
             offset=30;
             color = white;
+        }
+        if(t==10){
+            color = red;
         }
         createRectangle("top",100000,color,color,color,color,0,offset,height,width,layer);
         createRectangle("bottom",100000,color,color,color,color,0,-offset,height,width,layer);
@@ -1984,6 +2039,9 @@ int main (int argc, char** argv)
     scoreLabel_x=175;
     scoreLabel_y=250;
 
+    timer_y=250;
+    timer_x=20;
+
     endLabel="";
     endLabel_x=-160;
 
@@ -1995,6 +2053,7 @@ int main (int argc, char** argv)
 
     glfwGetCursorPos(window, &mouse_pos_x, &mouse_pos_y);
 
+    game_start_timer=glfwGetTime();
     old_time = glfwGetTime();
     /* Draw in loop */
     while (!glfwWindowShouldClose(window)) {
