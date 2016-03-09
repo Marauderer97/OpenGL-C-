@@ -1,4 +1,64 @@
 ----------------------------------------------------------------
+RUNNING THE GAME
+----------------------------------------------------------------
+
+The game was created using GLFW. Within the GLFW folder, use the following instructions to run the game.
+1)To compile just run `make`
+2)Then do `./sample2D` to start the game
+
+----------------------------------------------------------------
+CONTROLS AND INFORMATION
+----------------------------------------------------------------
+Controls:
+
+Mouse:
+1)Scroll up/down to zoom in and zoom out
+2)Right click and drag to pan the scene
+3)Left click anywhere on the screen to get the cannon ready, and release to launch a cannonball
+
+Keyboard:
+1)'R' to reset the cannonball so it can be launched again if you are in a hurry
+2)'UP' to zoom in
+3)'DOWN' to zoom out
+4)'RIGHT' to pan right
+5)'LEFT' to pan left
+6)'N' to pan up
+7)'M' to pan down
+8)'SPACE' to launch the cannon
+9)'S' to decrease the launch power
+10)'F' to increase the launch power
+11)'A' to increase the launch angle
+12)'B' to decrease the launch angle
+
+
+About the game:
+
+1)Get a score as high as possible.
+2)There are coins scattered around collecting which give you a 100 points
+3)There is a switch in the game which the cannonball can activate (by jumping on it), this would give you the locations of the 3 goals. These goals each give you 200 points.
+4)Killing a pig gives you a 100 points
+5)Breaking boxes would give you 50 points
+
+
+Features:
+
+1)No images used anywhere in the game. Everything is create by using shapes in openGL. This ensures the loading of the game is quick and efficient.
+2)Rendered text/numbers without the help of any libraries (only using shapes).
+3)A power bar on the top left of the screen.
+4)Cannon recoil after firing a shot.
+5)Collision using boxes(not circles), this is a lot more effective when blocks are of uneven size.
+6)Small animations where pigs/boxes rotate/topple over and pigs get black eyes indicating their health.
+7)Used elastic collisions between movable objects and laws or reflection for collisions with immovable objects.
+8)A switch/button which unlocks goals.
+
+
+Note:
+
+All objects are sorted into different layers. Each layer is drawn one at a time. Some layers are more prefered and 
+will be drawn last (Like the pig layers) whereas others will be drawn earlier (Like the background layer). Within a 
+layer objects are drawn in a lexicographical order. These two together give you the ability to draw complex objects with ease.
+
+----------------------------------------------------------------
 DEPENDENCIES
 ----------------------------------------------------------------
 Linux/Windows/ Mac OSX - Dependencies: (Recommended)
@@ -51,15 +111,3 @@ It is recommended to use GLFW+GLAD+GLM on all OSes.
 
 FreeGLUT+GLEW+GLM can be used only on linux but not recommended.
 Use apt-get to install FreeGLUT, libglew, glm on Linux.
-
-----------------------------------------------------------------
-DEMO CONTROLS
-----------------------------------------------------------------
-Keyboard:
- c - toggle cube rotation
- p - toggle pyramid rotation
- q - quit
-
-Mouse:
- Left click - Change Pyramid rotation direction
- Right click - Change the vector about which Cube rotates
