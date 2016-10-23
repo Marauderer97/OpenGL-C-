@@ -3,7 +3,7 @@ A cannon game where the objective is to score as many points as possible by wrec
 
 ### Gameplay
 ![Screenshot of Cannon Game](gameplay.gif "Screenshot")
-
+* (The quality of the gif had to be reduced to reduce its size)
 
 ### Controls:
 
@@ -58,6 +58,7 @@ All objects are sorted into different layers. Each layer is drawn one at a time.
 * GLFW
 * GLAD
 * GLM
+
 ##### Linux - Dependencies: (alternative)
 * FreeGLUT
 * GLEW
